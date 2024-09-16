@@ -176,6 +176,7 @@ function updateGameArea() {
             myGamePiece.gravity = 0; // Stop gravity
             gameOver = true;
             document.getElementById('collisionSound').play();
+            myGameArea.stopMusic();
             break;
         }
     }
