@@ -101,7 +101,19 @@ function component(width, height, color, x, y, type) {
         } else if (this.type == "image") {
             var img = new Image();
             img.src = color;
-            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            
+            // Draw the image with proper transformation
+            if (this.y === 0) {
+                // Flip image vertically for top obstacles
+                ctx.save(); // Save the current state
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(Math.PI); // Rotate 180 degrees
+                ctx.drawImage(img, -this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.restore(); // Restore the state
+            } else {
+                // Draw normally for bottom obstacles
+                ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            }
         } else {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -136,6 +148,7 @@ function component(width, height, color, x, y, type) {
         return crash;
     }
 }
+
 
 function updateGameArea() {
     if (gamePaused) return;
