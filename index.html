@@ -28,7 +28,7 @@ var gamePaused = false;
 
 function startGame() {
     document.getElementById('bgMusic').play();
-    myGamePiece = new component(50, 50, "images/character.png", 10, 120, "image");
+    myGamePiece = new component(50, 50, "images:character.png", 10, 120, "image");
     myGamePiece.gravity = 0.05;
     myScore = new component("30px", "Consolas", "black", 280, 40, "text");
     myGameArea.start();
