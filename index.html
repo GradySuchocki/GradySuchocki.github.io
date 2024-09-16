@@ -7,6 +7,9 @@ canvas {
     border:1px solid #d3d3d3;
     background-color: #f1f1f1;
     background-image: url('background-image.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 #controls {
     margin: 20px 0;
@@ -153,8 +156,8 @@ function updateGameArea() {
         minGap = 50;
         maxGap = 200;
         gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-        myObstacles.push(new component(30, height, "images/pole.png", x, 0, "image"));
-        myObstacles.push(new component(30, x - height - gap, "images/pole.png", x, height + gap, "image"));
+        myObstacles.push(new component(30, height, "images:pole.png", x, 0, "image"));
+        myObstacles.push(new component(30, x - height - gap, "images:pole.png", x, height + gap, "image"));
     }
     for (var i = 0; i < myObstacles.length; i++) {
         myObstacles[i].x += -1;
@@ -207,4 +210,3 @@ function pauseGame() {
 
 </body>
 </html>
-
