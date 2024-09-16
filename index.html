@@ -103,7 +103,7 @@ function component(width, height, color, x, y, type) {
         } else if (this.type == "image") {
             var img = new Image();
             img.src = color;
-            
+
             if (this.explosionVisible) {
                 // Draw explosion image
                 var explosionImg = new Image();
@@ -146,18 +146,19 @@ function component(width, height, color, x, y, type) {
     
     this.crashWith = function(otherobj) {
         var myleft = this.x;
-        var myright = this.x + (this.width);
+        var myright = this.x + this.width;
         var mytop = this.y;
-        var mybottom = this.y + (this.height);
+        var mybottom = this.y + this.height;
         var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
+        var otherright = otherobj.x + otherobj.width;
         var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = !(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright);
-        return crash;
+        var otherbottom = otherobj.y + otherobj.height;
+
+        // Check for collision
+        var collision = !(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright);
+        return collision;
     }
 }
-
 
 function updateGameArea() {
     if (gamePaused) return;
@@ -189,10 +190,10 @@ function updateGameArea() {
         x = myGameArea.canvas.width;
         minHeight = 20;
         maxHeight = 200;
-        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
         minGap = 50;
         maxGap = 200;
-        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
         
         var topObstacle = new component(30, height, "images-pole3.png", x, 0, "image");
         var bottomObstacle = new component(30, x - height - gap, "images-pole3.png", x, height + gap, "image");
@@ -206,11 +207,12 @@ function updateGameArea() {
         myObstacles[i].update();
     }
 
-    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.text = "SCORE: " + myGameArea.frameNo;
     myScore.update();
     myGamePiece.newPos();
     myGamePiece.update();
 }
+
 
 
 
