@@ -92,6 +92,8 @@ function component(width, height, color, x, y, type) {
     this.y = y;
     this.gravity = 0;
     this.gravitySpeed = 0;
+    this.explosionVisible = false; // New property for explosion effect
+
     this.update = function() {
         ctx = myGameArea.context;
         if (this.type == "text") {
@@ -102,7 +104,14 @@ function component(width, height, color, x, y, type) {
             var img = new Image();
             img.src = color;
             
-            // Draw the image with proper transformation
+            if (this.explosionVisible) {
+                // Draw the explosion image if needed
+                var explosionImg = new Image();
+                explosionImg.src = 'explosion.png';
+                ctx.drawImage(explosionImg, this.x - this.width / 2, this.y - this.height / 2, this.width * 2, this.height * 2);
+            }
+
+            // Draw the obstacle image
             if (this.y === 0) {
                 // Flip image vertically for top obstacles
                 ctx.save(); // Save the current state
@@ -150,6 +159,7 @@ function component(width, height, color, x, y, type) {
 }
 
 
+
 function updateGameArea() {
     if (gamePaused) return;
 
@@ -157,6 +167,7 @@ function updateGameArea() {
     for (var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             document.getElementById('collisionSound').play();
+            myGamePiece.explosionVisible = true; // Show explosion effect
             myGameArea.pause();
             return;
         }
@@ -171,8 +182,12 @@ function updateGameArea() {
         minGap = 50;
         maxGap = 200;
         gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-        myObstacles.push(new component(30, height, "images-pole3.png", x, 0, "image"));
-        myObstacles.push(new component(30, x - height - gap, "images-pole3.png", x, height + gap, "image"));
+        
+        var topObstacle = new component(30, height, "images-pole3.png", x, 0, "image");
+        var bottomObstacle = new component(30, x - height - gap, "images-pole3.png", x, height + gap, "image");
+        
+        myObstacles.push(topObstacle);
+        myObstacles.push(bottomObstacle);
     }
     for (var i = 0; i < myObstacles.length; i++) {
         myObstacles[i].x += -1;
@@ -183,6 +198,7 @@ function updateGameArea() {
     myGamePiece.newPos();
     myGamePiece.update();
 }
+
 
 function everyinterval(n) {
     if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
