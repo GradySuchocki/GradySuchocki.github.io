@@ -37,10 +37,10 @@ function initGame() {
 }
 
 var myGameArea = {
-    canvas : document.createElement("canvas"),
-    start : function() {
-        this.canvas.width = 480;
-        this.canvas.height = 270;
+    canvas: document.createElement("canvas"),
+    start: function() {
+        this.canvas.width = 800;  // Increased width
+        this.canvas.height = 600; // Increased height
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
@@ -48,9 +48,12 @@ var myGameArea = {
         window.addEventListener('keydown', control);
         window.addEventListener('keyup', releaseControl); // Track key release
     },
-    clear : function() {
+    clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
+    // Other methods remain unchanged
+};
+
     pause : function() {
         if (this.interval) {
             clearInterval(this.interval);
@@ -171,26 +174,35 @@ function updateGameArea() {
     if (gamePaused) return;
 
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    var gameOver = false;
-
     for (var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            // Show explosion effect and end game
-            myGamePiece.explosionVisible = true;
-            myGamePiece.gravity = 0; // Stop gravity
-            gameOver = true;
             document.getElementById('collisionSound').play();
-            myGameArea.stopMusic(); // Stop background music
-            break;
+            myGameArea.pause();
+            return;
         }
     }
-
-    if (gameOver) {
-        myGameArea.clear();
-        myGamePiece.update(); // Update the bird to show explosion
-        myScore.update();
-        return; // Stop further updates
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new component(30, height, "images-pole3.png", x, 0, "image"));
+        myObstacles.push(new component(30, myGameArea.canvas.height - height - gap, "images-pole3.png", x, height + gap, "image"));
     }
+    for (var i = 0; i < myObstacles.length; i++) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
+    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
