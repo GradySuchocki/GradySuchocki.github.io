@@ -92,7 +92,7 @@ function component(width, height, color, x, y, type) {
     this.y = y;
     this.gravity = 0;
     this.gravitySpeed = 0;
-    this.explosionVisible = false; // New property for explosion effect
+    this.explosionVisible = false; // Explosion flag
 
     this.update = function() {
         ctx = myGameArea.context;
@@ -105,13 +105,13 @@ function component(width, height, color, x, y, type) {
             img.src = color;
             
             if (this.explosionVisible) {
-                // Draw the explosion image if needed
+                // Draw explosion image
                 var explosionImg = new Image();
                 explosionImg.src = 'explosion.png';
                 ctx.drawImage(explosionImg, this.x - this.width / 2, this.y - this.height / 2, this.width * 2, this.height * 2);
             }
 
-            // Draw the obstacle image
+            // Draw obstacle image
             if (this.y === 0) {
                 // Flip image vertically for top obstacles
                 ctx.save(); // Save the current state
@@ -128,12 +128,14 @@ function component(width, height, color, x, y, type) {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
+    
     this.newPos = function() {
         this.gravitySpeed += this.gravity;
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;
         this.hitBottom();
     }
+    
     this.hitBottom = function() {
         var rockbottom = myGameArea.canvas.height - this.height;
         if (this.y > rockbottom) {
@@ -141,6 +143,7 @@ function component(width, height, color, x, y, type) {
             this.gravitySpeed = 0;
         }
     }
+    
     this.crashWith = function(otherobj) {
         var myleft = this.x;
         var myright = this.x + (this.width);
@@ -150,14 +153,10 @@ function component(width, height, color, x, y, type) {
         var otherright = otherobj.x + (otherobj.width);
         var othertop = otherobj.y;
         var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
+        var crash = !(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright);
         return crash;
     }
 }
-
 
 
 function updateGameArea() {
@@ -212,6 +211,7 @@ function updateGameArea() {
     myGamePiece.newPos();
     myGamePiece.update();
 }
+
 
 
 function everyinterval(n) {
