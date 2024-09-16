@@ -79,10 +79,6 @@ var myGameArea = {
         } else {
             this.continue();
         }
-    },
-    stopMusic: function() {
-        document.getElementById('bgMusic').pause(); // Stop background music
-        document.getElementById('bgMusic').currentTime = 0; // Reset to start
     }
 }
 
@@ -180,7 +176,6 @@ function updateGameArea() {
             myGamePiece.gravity = 0; // Stop gravity
             gameOver = true;
             document.getElementById('collisionSound').play();
-            myGameArea.stopMusic(); // Stop background music
             break;
         }
     }
@@ -221,6 +216,10 @@ function updateGameArea() {
     myGamePiece.update();
 }
 
+
+
+
+
 function everyinterval(n) {
     if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
     return false;
@@ -244,4 +243,31 @@ function releaseControl(e) {
         isArrowUpPressed = false;
         myGamePiece.gravity = 0.05; // Medium fall speed when the key is not pressed
     }
+}
 
+function accelerate(n) {
+    if (isArrowUpPressed) {
+        myGamePiece.gravity = n;
+    }
+}
+
+function startGame() {
+    myGameArea.startGame();
+}
+
+function pauseGame() {
+    myGameArea.pause();
+}
+</script>
+
+<div id="controls">
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+    <button id="pauseBtn" onclick="pauseGame()">Pause Game</button>
+    <button onmousedown="accelerate(-0.05)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+</div>
+
+<p>Use the ACCELERATE button or Arrow keys to stay in the air</p>
+<p>How long can you stay alive?</p>
+
+</body>
+</html>
