@@ -79,6 +79,10 @@ var myGameArea = {
         } else {
             this.continue();
         }
+    },
+    stopMusic: function() {
+        document.getElementById('bgMusic').pause(); // Stop background music
+        document.getElementById('bgMusic').currentTime = 0; // Reset to start
     }
 }
 
@@ -145,7 +149,7 @@ function component(width, height, color, x, y, type) {
     }
     
     this.crashWith = function(otherobj) {
-        // Define margin
+        // Define margin (adjust if necessary)
         var margin = 10;
 
         var myleft = this.x - margin;
@@ -176,7 +180,7 @@ function updateGameArea() {
             myGamePiece.gravity = 0; // Stop gravity
             gameOver = true;
             document.getElementById('collisionSound').play();
-            myGameArea.stopMusic();
+            myGameArea.stopMusic(); // Stop background music
             break;
         }
     }
@@ -217,10 +221,6 @@ function updateGameArea() {
     myGamePiece.update();
 }
 
-
-
-
-
 function everyinterval(n) {
     if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
     return false;
@@ -260,6 +260,7 @@ function pauseGame() {
     myGameArea.pause();
 }
 </script>
+
 
 <div id="controls">
     <button id="startBtn" onclick="startGame()">Start Game</button>
