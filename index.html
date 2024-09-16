@@ -145,10 +145,13 @@ function component(width, height, color, x, y, type) {
     }
     
     this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + this.width;
-        var mytop = this.y;
-        var mybottom = this.y + this.height;
+        // Define margin
+        var margin = 10;
+
+        var myleft = this.x - margin;
+        var myright = this.x + this.width + margin;
+        var mytop = this.y - margin;
+        var mybottom = this.y + this.height + margin;
         var otherleft = otherobj.x;
         var otherright = otherobj.x + otherobj.width;
         var othertop = otherobj.y;
@@ -212,6 +215,7 @@ function updateGameArea() {
     myGamePiece.newPos();
     myGamePiece.update();
 }
+
 
 
 
