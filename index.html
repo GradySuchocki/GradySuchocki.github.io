@@ -178,10 +178,10 @@ function control(e) {
     if (gamePaused) return;
     switch(e.key) {
         case "ArrowUp":
-            accelerate(-0.2);
+            accelerate(-0.05); // Decreased acceleration for slower movement
             break;
         case "ArrowDown":
-            accelerate(0.1);
+            accelerate(0.05); // Decreased acceleration for slower movement
             break;
     }
 }
@@ -202,11 +202,7 @@ function pauseGame() {
 <div id="controls">
     <button id="startBtn" onclick="startGame()">Start Game</button>
     <button id="pauseBtn" onclick="pauseGame()">Pause Game</button>
-    <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+    <button onmousedown="accelerate(-0.05)" onmouseup="accelerate(0.05)">ACCELERATE</button>
 </div>
 
-<p>Use the ACCELERATE button or Arrow keys to stay in the air</p>
-<p>How long can you stay alive?</p>
-
-</body>
-</html>
+<p>Use
