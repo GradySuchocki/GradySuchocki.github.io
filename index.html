@@ -30,6 +30,7 @@ var myObstacles = [];
 var myScore;
 var gamePaused = false;
 var gameStarted = false;
+var isArrowUpPressed = false; // Track the ArrowUp key state
 
 function initGame() {
     myGameArea.start();
@@ -45,6 +46,7 @@ var myGameArea = {
         this.frameNo = 0;
         this.interval = null;  // No game loop running initially
         window.addEventListener('keydown', control);
+        window.addEventListener('keyup', releaseControl); // Track key release
     },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -68,7 +70,7 @@ var myGameArea = {
         if (!gameStarted) {
             gameStarted = true;
             myGamePiece = new component(50, 50, "images-character.png", 10, 120, "image");
-            myGamePiece.gravity = 0.05;
+            myGamePiece.gravity = 0.05; // Default gravity
             myScore = new component("30px", "Consolas", "black", 280, 40, "text");
             myObstacles = [];
             this.frameNo = 0;
@@ -178,16 +180,26 @@ function control(e) {
     if (gamePaused) return;
     switch(e.key) {
         case "ArrowUp":
-            accelerate(-0.05); // Decreased acceleration for slower movement
+            isArrowUpPressed = true;
+            accelerate(-0.05); // Slow upward acceleration
             break;
         case "ArrowDown":
-            accelerate(0.05); // Decreased acceleration for slower movement
+            accelerate(0.05); // Slow downward acceleration
             break;
     }
 }
 
+function releaseControl(e) {
+    if (e.key === "ArrowUp") {
+        isArrowUpPressed = false;
+        myGamePiece.gravity = 0.05; // Medium fall speed when the key is not pressed
+    }
+}
+
 function accelerate(n) {
-    myGamePiece.gravity = n;
+    if (isArrowUpPressed) {
+        myGamePiece.gravity = n;
+    }
 }
 
 function startGame() {
@@ -205,4 +217,8 @@ function pauseGame() {
     <button onmousedown="accelerate(-0.05)" onmouseup="accelerate(0.05)">ACCELERATE</button>
 </div>
 
-<p>Use
+<p>Use the ACCELERATE button or Arrow keys to stay in the air</p>
+<p>How long can you stay alive?</p>
+
+</body>
+</html>
