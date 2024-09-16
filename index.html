@@ -17,7 +17,7 @@ canvas {
 }
 </style>
 </head>
-<body onload="startGame()">
+<body onload="initGame()">
 <audio id="bgMusic" src="background-music.mp3" loop></audio>
 <audio id="collisionSound" src="collision-sound.mp3"></audio>
 <script>
@@ -25,12 +25,9 @@ var myGamePiece;
 var myObstacles = [];
 var myScore;
 var gamePaused = false;
+var gameStarted = false;
 
-function startGame() {
-    document.getElementById('bgMusic').play();
-    myGamePiece = new component(50, 50, "images:character.png", 10, 120, "image");
-    myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+function initGame() {
     myGameArea.start();
 }
 
@@ -42,21 +39,39 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = null;  // No game loop running initially
         window.addEventListener('keydown', control);
     },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     pause : function() {
-        clearInterval(this.interval);
-        this.interval = null;
-        gamePaused = true;
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+            gamePaused = true;
+            document.getElementById('bgMusic').pause();
+        }
     },
     continue : function() {
         if (gamePaused) {
             this.interval = setInterval(updateGameArea, 20);
             gamePaused = false;
+            document.getElementById('bgMusic').play();
+        }
+    },
+    startGame : function() {
+        if (!gameStarted) {
+            gameStarted = true;
+            myGamePiece = new component(50, 50, "images/character.png", 10, 120, "image");
+            myGamePiece.gravity = 0.05;
+            myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+            myObstacles = [];
+            this.frameNo = 0;
+            this.interval = setInterval(updateGameArea, 20);
+            document.getElementById('bgMusic').play();
+        } else {
+            this.continue();
         }
     }
 }
@@ -118,10 +133,12 @@ function component(width, height, color, x, y, type) {
 
 function updateGameArea() {
     if (gamePaused) return;
+
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
     for (var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             document.getElementById('collisionSound').play();
+            myGameArea.pause();
             return;
         }
     }
@@ -154,6 +171,7 @@ function everyinterval(n) {
 }
 
 function control(e) {
+    if (gamePaused) return;
     switch(e.key) {
         case "ArrowUp":
             accelerate(-0.2);
@@ -169,21 +187,11 @@ function accelerate(n) {
 }
 
 function startGame() {
-    if (gamePaused) {
-        myGameArea.continue();
-        document.getElementById('bgMusic').play();
-    } else {
-        myGamePiece = new component(50, 50, "images/character.png", 10, 120, "image");
-        myGamePiece.gravity = 0.05;
-        myScore = new component("30px", "Consolas", "black", 280, 40, "text");
-        myObstacles = [];
-        myGameArea.start();
-    }
+    myGameArea.startGame();
 }
 
 function pauseGame() {
     myGameArea.pause();
-    document.getElementById('bgMusic').pause();
 }
 </script>
 
