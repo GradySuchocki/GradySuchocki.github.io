@@ -19,18 +19,11 @@ canvas {
     font-size: 16px;
     margin-right: 10px;
 }
-body {
-    background-image: url('webpage-background.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
 </style>
 </head>
 <body onload="initGame()">
 <audio id="bgMusic" src="background-music.mp3" loop></audio>
 <audio id="collisionSound" src="collision-sound.mp3"></audio>
-<audio id="explosionSound" src="explosion-sound.mp3"></audio>
 <script>
 var myGamePiece;
 var myObstacles = [];
@@ -38,17 +31,16 @@ var myScore;
 var gamePaused = false;
 var gameStarted = false;
 var isArrowUpPressed = false; // Track the ArrowUp key state
-var hasCrashed = false; // Flag to check if crash sound has been played
 
 function initGame() {
     myGameArea.start();
 }
 
 var myGameArea = {
-    canvas: document.createElement("canvas"),
-    start: function() {
-        this.canvas.width = 1200;  // Increased width
-        this.canvas.height = 800;  // Increased height
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
@@ -56,10 +48,10 @@ var myGameArea = {
         window.addEventListener('keydown', control);
         window.addEventListener('keyup', releaseControl); // Track key release
     },
-    clear: function() {
+    clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
-    pause: function() {
+    pause : function() {
         if (this.interval) {
             clearInterval(this.interval);
             this.interval = null;
@@ -67,19 +59,19 @@ var myGameArea = {
             document.getElementById('bgMusic').pause();
         }
     },
-    continue: function() {
+    continue : function() {
         if (gamePaused) {
             this.interval = setInterval(updateGameArea, 20);
             gamePaused = false;
             document.getElementById('bgMusic').play();
         }
     },
-    startGame: function() {
+    startGame : function() {
         if (!gameStarted) {
             gameStarted = true;
-            myGamePiece = new component(50, 50, "images-character.png", 10, 120, "image");
+            myGamePiece = new component(50, 50, "images-character2.png", 10, 120, "image");
             myGamePiece.gravity = 0.05; // Default gravity
-            myScore = new component("30px", "Consolas", "black", 900, 40, "text");
+            myScore = new component("30px", "Consolas", "black", 280, 40, "text");
             myObstacles = [];
             this.frameNo = 0;
             this.interval = setInterval(updateGameArea, 20);
@@ -91,11 +83,6 @@ var myGameArea = {
     stopMusic: function() {
         document.getElementById('bgMusic').pause(); // Stop background music
         document.getElementById('bgMusic').currentTime = 0; // Reset to start
-    },
-    stopExplosionSound: function() {
-        var explosionSound = document.getElementById('explosionSound');
-        explosionSound.pause(); // Stop explosion sound
-        explosionSound.currentTime = 0; // Reset to start
     }
 }
 
@@ -121,10 +108,10 @@ function component(width, height, color, x, y, type) {
             var img = new Image();
             img.src = color;
 
-            // Draw explosion image if necessary
             if (this.explosionVisible) {
+                // Draw explosion image
                 var explosionImg = new Image();
-                explosionImg.src = 'explosion.png';
+                explosionImg.src = 'starburst-explosion.png';
                 ctx.drawImage(explosionImg, this.x - this.width / 2, this.y - this.height / 2, this.width * 2, this.height * 2);
             }
 
@@ -184,41 +171,50 @@ function updateGameArea() {
     if (gamePaused) return;
 
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    var gameOver = false;
+
     for (var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            if (!hasCrashed) { // Check if crash sound has already been played
-                document.getElementById('collisionSound').play();
-                hasCrashed = true; // Set flag to true after playing sound
-            }
-            myGamePiece.explosionVisible = true; // Trigger explosion effect
+            // Show explosion effect and end game
+            myGamePiece.explosionVisible = true;
+            myGamePiece.gravity = 0; // Stop gravity
+            gameOver = true;
+            document.getElementById('collisionSound').play();
             myGameArea.stopMusic(); // Stop background music
-            myGameArea.stopExplosionSound(); // Stop explosion sound if playing
-            myGameArea.pause();
-            return;
+            break;
         }
     }
 
-    // Reset the crash flag
-    hasCrashed = false;
+    if (gameOver) {
+        myGameArea.clear();
+        myGamePiece.update(); // Update the bird to show explosion
+        myScore.update();
+        return; // Stop further updates
+    }
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
-        minHeight = 40;  // Increased minimum height
-        maxHeight = 300; // Increased maximum height
+        minHeight = 20;
+        maxHeight = 200;
         height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 100;  // Increased minimum gap
-        maxGap = 300;  // Increased maximum gap
+        minGap = 50;
+        maxGap = 200;
         gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(50, height, "images-pole3.png", x, 0, "image"));
-        myObstacles.push(new component(50, myGameArea.canvas.height - height - gap, "images-pole3.png", x, height + gap, "image"));
+        
+        var topObstacle = new component(30, height, "images-pole5.png", x, 0, "image");
+        var bottomObstacle = new component(30, x - height - gap, "images-pole5.png", x, height + gap, "image");
+        
+        myObstacles.push(topObstacle);
+        myObstacles.push(bottomObstacle);
     }
 
     for (var i = 0; i < myObstacles.length; i++) {
         myObstacles[i].x += -1;
         myObstacles[i].update();
     }
+
     myScore.text = "SCORE: " + myGameArea.frameNo;
     myScore.update();
     myGamePiece.newPos();
@@ -264,6 +260,16 @@ function pauseGame() {
     myGameArea.pause();
 }
 </script>
+
+
+<div id="controls">
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+    <button id="pauseBtn" onclick="pauseGame()">Pause Game</button>
+</div>
+
+<p>Use the Arrow keys to stay in the air</p>
+<p>How long can you stay alive?</p>
+
 </body>
 </html>
 
