@@ -32,7 +32,6 @@ var gamePaused = false;
 var gameStarted = false;
 var isArrowUpPressed = false; // Track the ArrowUp key state
 var hasCrashed = false; // Flag to check if crash sound has been played
-var explosionSoundPlayed = false; // Flag to check if explosion sound has been played
 
 function initGame() {
     myGameArea.start();
@@ -251,13 +250,7 @@ function startGame() {
 function pauseGame() {
     myGameArea.pause();
 }
-
-// Stop the explosion sound and ensure it doesn't play again
-function stopExplosionSound() {
-    var explosionSound = document.getElementById('collisionSound');
-    explosionSound.pause(); // Stop the sound
-    explosionSound.currentTime = 0; // Reset the sound to start
-}
+</
 
 
 
