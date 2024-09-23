@@ -111,6 +111,7 @@
                 }
             },
             startGame: function() {
+                document.getElementById('gameOverMessage').style.display = 'none'; // Hide game over message
                 if (!gameStarted) {
                     gameStarted = true;
                     myGamePiece = new component(50, 50, "images-character2.png", 10, 120, "image");
@@ -121,7 +122,7 @@
                     this.interval = setInterval(updateGameArea, 20);
                     document.getElementById('bgMusic').play();
                 } else {
-                    this.continue();
+                    this.continue(); // Continue if already started
                 }
             },
             stopMusic: function() {
@@ -239,7 +240,9 @@
 
             myGameArea.clear();
             myGameArea.frameNo += 1;
-            if (myGameArea.frameNo == 1 || everyinterval(150)) {
+
+            // Only generate new obstacles if the game has just started
+            if (gameStarted && (myGameArea.frameNo == 1 || everyinterval(150))) {
                 x = myGameArea.canvas.width;
                 minHeight = 20;
                 maxHeight = 200;
@@ -296,15 +299,6 @@
             }
         }
 
-        function startGame() {
-            document.getElementById('gameOverMessage').style.display = 'none'; // Hide game over message
-            myGameArea.startGame();
-        }
-
-        function pauseGame() {
-            myGameArea.pause();
-        }
-
         function restartGame() {
             myObstacles = [];
             myGameArea.frameNo = 0;
@@ -312,10 +306,23 @@
             document.getElementById('gameOverMessage').style.display = 'none'; // Hide game over message
             startGame(); // Restart the game
         }
-    </script>
 
+        function startGame() {
+            document.getElementById('gameOverMessage').style.display = 'none'; // Hide game over message
+            if (!gameStarted) {
+                myGameArea.startGame();
+            } else {
+                myGameArea.continue(); // Continue if already started
+            }
+        }
+
+        function pauseGame() {
+            myGameArea.pause();
+        }
+    </script>
 </body>
 </html>
+
 
 
 
