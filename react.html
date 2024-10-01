@@ -282,9 +282,9 @@
       const squareClass = `square ${isLight ? 'light' : 'dark'} ${isSelected ? 'selected' : ''}`;
 
       return (
-        <button className={squareClass} onClick={onClick}>
+        <div className={squareClass} onClick={onClick}>
           {value && <img src={pieceImages[value]} alt={value} className="piece" />}
-        </button>
+        </div>
       );
     }
 
@@ -293,6 +293,7 @@
   </script>
 </body>
 </html>
+
 
 
 
