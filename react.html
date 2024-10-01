@@ -48,12 +48,6 @@
       flex-direction: column;
       align-items: center;
     }
-
-    .board {
-      display: flex;
-      flex-direction: column;
-      margin: 20px;
-    }
   </style>
 </head>
 <body>
@@ -227,7 +221,7 @@
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
-        <div className="board">
+        <div>
           {game.map((row, rowIndex) => (
             <div key={rowIndex} style={{ display: 'flex' }}>
               {row.map((value, colIndex) => (
@@ -276,8 +270,5 @@
   </script>
 </body>
 </html>
-
-
-
 
 
