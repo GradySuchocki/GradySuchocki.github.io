@@ -57,21 +57,30 @@
         setWinner(null);
       };
 
+      const speakMove = (piece, from, to) => {
+        const fromSquare = String.fromCharCode(97 + from[1]) + (8 - from[0]);
+        const toSquare = String.fromCharCode(97 + to[1]) + (8 - to[0]);
+        const speech = new SpeechSynthesisUtterance(`Move ${piece} from ${fromSquare} to ${toSquare}`);
+        window.speechSynthesis.speak(speech);
+      };
+
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
         const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
         const isSameColor = (targetPiece) => (currentPlayer === 'white' ? targetPiece.toUpperCase() === targetPiece : targetPiece.toLowerCase() === targetPiece);
 
+        // Pawn movement logic
         if (piece.toLowerCase() === 'p') {
           const direction = currentPlayer === 'white' ? -1 : 1;
-          if (fromCol === toCol) { // Move forward
+          if (fromCol === toCol) {
             if (game[toRow][toCol] === '') {
-              return fromRow + direction === toRow; // Regular move
+              return fromRow + direction === toRow;
             }
           } else if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(game[toRow][toCol])) {
-            return fromRow + direction === toRow; // Capture move
+            return fromRow + direction === toRow;
           }
         }
 
+        // Other pieces' movement logic
         if (piece.toLowerCase() === 'k') {
           return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
         }
@@ -138,6 +147,9 @@
               alert("You cannot move into check!");
               return;
             }
+
+            // Speak the move
+            speakMove(selectedPiece, [selectedRow, selectedCol], [row, col]);
 
             setGame(newGame);
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
@@ -218,6 +230,7 @@
   </script>
 </body>
 </html>
+
 
 
 
