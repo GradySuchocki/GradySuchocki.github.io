@@ -28,6 +28,11 @@
       text-align: center;
     }
 
+    .timer {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -127,6 +132,26 @@
       const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
       const [gameOver, setGameOver] = React.useState(false);
       const [winner, setWinner] = React.useState(null);
+      const [timer, setTimer] = React.useState(3600); // 60 minutes in seconds
+      const [gameStarted, setGameStarted] = React.useState(false);
+
+      React.useEffect(() => {
+        let interval;
+        if (gameStarted && !gameOver) {
+          interval = setInterval(() => {
+            setTimer(prev => {
+              if (prev <= 0) {
+                clearInterval(interval);
+                setGameOver(true);
+                setWinner(currentPlayer === 'white' ? 'Black' : 'White');
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
+        return () => clearInterval(interval);
+      }, [gameStarted, gameOver, currentPlayer]);
 
       const resetGame = () => {
         setGame(initialGameState);
@@ -134,6 +159,8 @@
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
         setWinner(null);
+        setTimer(3600); // Reset timer
+        setGameStarted(false); // Reset game started flag
       };
 
       const speakMove = (piece, from, to) => {
@@ -233,6 +260,9 @@
             setGame(newGame);
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
             setSelectedSquare(null);
+            if (!gameStarted) {
+              setGameStarted(true);
+            }
           } else {
             setSelectedSquare(null);
           }
@@ -247,11 +277,18 @@
         return (currentPlayer === 'white' ? piece === piece.toUpperCase() : piece === piece.toLowerCase());
       };
 
+      const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      };
+
       return (
         <div className="board-container">
           <h2>
             {gameOver ? `${winner} wins!` : `${currentPlayer}'s Turn`}
           </h2>
+          <div className="timer">Time Remaining: {formatTime(timer)}</div>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <button onClick={resetGame}>Restart Game</button>
         </div>
@@ -293,6 +330,7 @@
   </script>
 </body>
 </html>
+
 
 
 
