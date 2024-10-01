@@ -9,6 +9,52 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .board-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .board {
+      display: flex;
+      flex-direction: column;
+      margin: 20px;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -169,8 +215,8 @@
       };
 
       return (
-        <div>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px', textAlign: 'center' }}>
+        <div className="board-container">
+          <h2>
             {gameOver ? `${winner} wins!` : `${currentPlayer}'s Turn`}
           </h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
@@ -181,7 +227,7 @@
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
-        <div>
+        <div className="board">
           {game.map((row, rowIndex) => (
             <div key={rowIndex} style={{ display: 'flex' }}>
               {row.map((value, colIndex) => (
@@ -230,6 +276,7 @@
   </script>
 </body>
 </html>
+
 
 
 
