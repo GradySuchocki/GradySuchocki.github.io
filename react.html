@@ -58,18 +58,38 @@
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
         const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
 
-        const direction = currentPlayer === 'white' ? -1 : 1;
-
         if (piece.toLowerCase() === 'p') {
+          const direction = currentPlayer === 'white' ? -1 : 1;
+
+          // Regular move
           if (fromCol === toCol && game[toRow][toCol] === '') {
-            return fromRow + direction === toRow; 
+            return fromRow + direction === toRow;
           }
+
+          // Capture move
           if (Math.abs(fromCol - toCol) === 1 && game[toRow][toCol] && opponentPieces.includes(game[toRow][toCol])) {
-            return fromRow + direction === toRow; 
+            return fromRow + direction === toRow;
           }
         }
 
-        return false;
+        // Other pieces (simplified for demonstration)
+        if (piece.toLowerCase() === 'k') {
+          return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
+        }
+        if (piece.toLowerCase() === 'r') {
+          return (fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
+        }
+        if (piece.toLowerCase() === 'n') {
+          return (Math.abs(fromRow - toRow) === 2 && Math.abs(fromCol - toCol) === 1) || (Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 2);
+        }
+        if (piece.toLowerCase() === 'b') {
+          return Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
+        }
+        if (piece.toLowerCase() === 'q') {
+          return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
+        }
+
+        return false; // For now, return false for unhandled pieces
       };
 
       const handleClick = (row, col) => {
@@ -92,6 +112,7 @@
             newGame[row][col] = selectedPiece;
             newGame[selectedRow][selectedCol] = '';
 
+            // Check for king capture
             if (capturedPiece && capturedPiece.toLowerCase() === 'k') {
               setGameOver(true);
               alert(`${currentPlayer === 'white' ? 'Black' : 'White'} wins!`);
@@ -176,6 +197,7 @@
   </script>
 </body>
 </html>
+
 
 
 
