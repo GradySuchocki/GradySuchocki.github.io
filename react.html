@@ -5,7 +5,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chessboard with Piece Images</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -56,18 +55,23 @@
       };
 
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
+        // Add logic for checking valid moves for each piece type.
         const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
 
+        // Example for validating moves (this can be expanded for all pieces):
         const direction = currentPlayer === 'white' ? -1 : 1;
 
         if (piece.toLowerCase() === 'p') {
+          // Pawn moves
           if (fromCol === toCol && game[toRow][toCol] === '') {
-            return fromRow + direction === toRow; 
+            return fromRow + direction === toRow; // Normal move
           }
           if (Math.abs(fromCol - toCol) === 1 && game[toRow][toCol] && opponentPieces.includes(game[toRow][toCol])) {
-            return fromRow + direction === toRow; 
+            return fromRow + direction === toRow; // Capture
           }
         }
+
+        // Add logic for other pieces here...
 
         return false;
       };
@@ -81,10 +85,12 @@
           const selectedPiece = newGame[selectedRow][selectedCol];
 
           if (isMoveValid(selectedPiece, selectedRow, selectedCol, row, col)) {
+            // Move the piece
             const capturedPiece = newGame[row][col];
             newGame[row][col] = selectedPiece;
             newGame[selectedRow][selectedCol] = '';
 
+            // Check for king capture
             if (capturedPiece && capturedPiece.toLowerCase() === 'k') {
               setGameOver(true);
               alert(`${currentPlayer === 'white' ? 'Black' : 'White'} wins!`);
@@ -106,9 +112,7 @@
 
       return (
         <div>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px', textAlign: 'center' }}>
-            {gameOver ? 'Game Over' : `${currentPlayer}'s Turn`}
-          </h2>
+          <h2>{gameOver ? 'Game Over' : `${currentPlayer}'s Turn`}</h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <button onClick={resetGame}>Restart Game</button>
         </div>
@@ -166,5 +170,6 @@
   </script>
 </body>
 </html>
+
 
 
