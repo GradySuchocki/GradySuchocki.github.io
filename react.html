@@ -25,6 +25,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 24px;
       margin: 20px 0;
+      text-align: center;
     }
 
     button {
@@ -37,6 +38,7 @@
       cursor: pointer;
       transition: background-color 0.3s;
       margin-top: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     button:hover {
@@ -47,6 +49,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    .board {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .board-row {
+      display: flex;
     }
   </style>
 </head>
@@ -221,9 +232,9 @@
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
-        <div>
+        <div className="board">
           {game.map((row, rowIndex) => (
-            <div key={rowIndex} style={{ display: 'flex' }}>
+            <div key={rowIndex} className="board-row">
               {row.map((value, colIndex) => (
                 <Square
                   key={colIndex}
@@ -270,5 +281,6 @@
   </script>
 </body>
 </html>
+
 
 
