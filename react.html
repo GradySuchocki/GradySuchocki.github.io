@@ -47,34 +47,33 @@
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
       const [gameOver, setGameOver] = React.useState(false);
-      const [check, setCheck] = React.useState(false);
+      const [winner, setWinner] = React.useState(null);
 
       const resetGame = () => {
         setGame(initialGameState);
         setSelectedSquare(null);
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
-        setCheck(false);
+        setWinner(null);
       };
 
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
         const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
+        const isSameColor = (targetPiece) => (currentPlayer === 'white' ? targetPiece.toUpperCase() === targetPiece : targetPiece.toLowerCase() === targetPiece);
 
         if (piece.toLowerCase() === 'p') {
           const direction = currentPlayer === 'white' ? -1 : 1;
-          // Regular move
-          if (fromCol === toCol && game[toRow][toCol] === '') {
-            return fromRow + direction === toRow;
-          }
-          // Capture move
-          if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(game[toRow][toCol])) {
-            return fromRow + direction === toRow;
+          if (fromCol === toCol) { // Move forward
+            if (game[toRow][toCol] === '') {
+              return fromRow + direction === toRow; // Regular move
+            }
+          } else if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(game[toRow][toCol])) {
+            return fromRow + direction === toRow; // Capture move
           }
         }
 
-        // Other pieces
         if (piece.toLowerCase() === 'k') {
-          return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1 && !isUnderAttack(toRow, toCol);
+          return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
         }
         if (piece.toLowerCase() === 'r') {
           return (fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
@@ -86,7 +85,8 @@
           return Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
         }
         if (piece.toLowerCase() === 'q') {
-          return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][col]));
+          return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) &&
+                 (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
         }
 
         return false; 
@@ -111,13 +111,12 @@
         if (selectedSquare) {
           const [selectedRow, selectedCol] = selectedSquare;
 
-          // If clicking on the same square, deselect
           if (row === selectedRow && col === selectedCol) {
             setSelectedSquare(null);
             return;
           }
 
-          const newGame = game.map(row => row.slice());
+          const newGame = game.map(r => r.slice());
           const selectedPiece = newGame[selectedRow][selectedCol];
 
           if (isMoveValid(selectedPiece, selectedRow, selectedCol, row, col)) {
@@ -128,13 +127,14 @@
             // Check for king capture
             if (capturedPiece && capturedPiece.toLowerCase() === 'k') {
               setGameOver(true);
-              alert(`${currentPlayer === 'white' ? 'Black' : 'White'} wins!`);
+              setWinner(currentPlayer === 'white' ? 'Black' : 'White');
               return;
             }
 
             // Check if move puts the king in check
-            if (isUnderAttack(newGame.findIndex(r => r.includes(currentPlayer === 'white' ? 'K' : 'k')), newGame[newGame.findIndex(r => r.includes(currentPlayer === 'white' ? 'K' : 'k'))].indexOf(currentPlayer === 'white' ? 'K' : 'k'))) {
-              newGame[row][col] = '';  // Undo move
+            const currentKing = currentPlayer === 'white' ? 'K' : 'k';
+            if (isUnderAttack(newGame.findIndex(r => r.includes(currentKing)), newGame[newGame.findIndex(r => r.includes(currentKing))].indexOf(currentKing))) {
+              newGame[row][col] = ''; // Undo move
               alert("You cannot move into check!");
               return;
             }
@@ -142,46 +142,24 @@
             setGame(newGame);
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
             setSelectedSquare(null);
-            const utterance = new SpeechSynthesisUtterance(`${selectedPiece} moved to ${row}, ${col}`);
-            window.speechSynthesis.speak(utterance);
           } else {
-            // Deselect if the move is invalid
             setSelectedSquare(null);
           }
         } else {
-          if (game[row][col] && (currentPlayer === 'white' ? game[row][col].toUpperCase() === game[row][col] : game[row][col].toLowerCase() === game[row][col])) {
+          if (game[row][col] && isSameColor(game[row][col])) {
             setSelectedSquare([row, col]);
           }
         }
-
-        // Check for stalemate
-        if (isStalemate()) {
-          setGameOver(true);
-          alert("Stalemate! It's a draw.");
-        }
       };
 
-      const isStalemate = () => {
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            if (currentPlayer === 'white' ? game[r][c].toUpperCase() === game[r][c] : game[r][c].toLowerCase() === game[r][c]) {
-              for (let newRow = 0; newRow < 8; newRow++) {
-                for (let newCol = 0; newCol < 8; newCol++) {
-                  if (isMoveValid(game[r][c], r, c, newRow, newCol)) {
-                    return false; // Found a valid move
-                  }
-                }
-              }
-            }
-          }
-        }
-        return true; // No valid moves found
+      const isSameColor = (piece) => {
+        return (currentPlayer === 'white' ? piece === piece.toUpperCase() : piece === piece.toLowerCase());
       };
 
       return (
         <div>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px', textAlign: 'center' }}>
-            {gameOver ? 'Game Over' : `${currentPlayer}'s Turn`}
+            {gameOver ? `${winner} wins!` : `${currentPlayer}'s Turn`}
           </h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <button onClick={resetGame}>Restart Game</button>
@@ -240,9 +218,6 @@
   </script>
 </body>
 </html>
-
-
-
 
 
 
