@@ -47,12 +47,14 @@
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
       const [gameOver, setGameOver] = React.useState(false);
+      const [check, setCheck] = React.useState(false);
 
       const resetGame = () => {
         setGame(initialGameState);
         setSelectedSquare(null);
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
+        setCheck(false);
       };
 
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
@@ -60,21 +62,19 @@
 
         if (piece.toLowerCase() === 'p') {
           const direction = currentPlayer === 'white' ? -1 : 1;
-
           // Regular move
           if (fromCol === toCol && game[toRow][toCol] === '') {
             return fromRow + direction === toRow;
           }
-
           // Capture move
-          if (Math.abs(fromCol - toCol) === 1 && game[toRow][toCol] && opponentPieces.includes(game[toRow][toCol])) {
+          if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(game[toRow][toCol])) {
             return fromRow + direction === toRow;
           }
         }
 
-        // Other pieces (simplified for demonstration)
+        // Other pieces
         if (piece.toLowerCase() === 'k') {
-          return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
+          return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1 && !isUnderAttack(toRow, toCol);
         }
         if (piece.toLowerCase() === 'r') {
           return (fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
@@ -86,10 +86,23 @@
           return Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
         }
         if (piece.toLowerCase() === 'q') {
-          return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][toCol]));
+          return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (game[toRow][toCol] === '' || opponentPieces.includes(game[toRow][col]));
         }
 
-        return false; // For now, return false for unhandled pieces
+        return false; 
+      };
+
+      const isUnderAttack = (row, col) => {
+        const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const piece = game[r][c];
+            if (opponentPieces.includes(piece) && isMoveValid(piece, r, c, row, col)) {
+              return true;
+            }
+          }
+        }
+        return false;
       };
 
       const handleClick = (row, col) => {
@@ -119,6 +132,13 @@
               return;
             }
 
+            // Check if move puts the king in check
+            if (isUnderAttack(newGame.findIndex(r => r.includes(currentPlayer === 'white' ? 'K' : 'k')), newGame[newGame.findIndex(r => r.includes(currentPlayer === 'white' ? 'K' : 'k'))].indexOf(currentPlayer === 'white' ? 'K' : 'k'))) {
+              newGame[row][col] = '';  // Undo move
+              alert("You cannot move into check!");
+              return;
+            }
+
             setGame(newGame);
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
             setSelectedSquare(null);
@@ -133,6 +153,29 @@
             setSelectedSquare([row, col]);
           }
         }
+
+        // Check for stalemate
+        if (isStalemate()) {
+          setGameOver(true);
+          alert("Stalemate! It's a draw.");
+        }
+      };
+
+      const isStalemate = () => {
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            if (currentPlayer === 'white' ? game[r][c].toUpperCase() === game[r][c] : game[r][c].toLowerCase() === game[r][c]) {
+              for (let newRow = 0; newRow < 8; newRow++) {
+                for (let newCol = 0; newCol < 8; newCol++) {
+                  if (isMoveValid(game[r][c], r, c, newRow, newCol)) {
+                    return false; // Found a valid move
+                  }
+                }
+              }
+            }
+          }
+        }
+        return true; // No valid moves found
       };
 
       return (
@@ -197,6 +240,7 @@
   </script>
 </body>
 </html>
+
 
 
 
