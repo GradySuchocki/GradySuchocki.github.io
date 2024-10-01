@@ -13,7 +13,6 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react,stage-3">
-    // Model: Starting state of the chessboard in 2D array
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -25,7 +24,6 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
-    // Mapping of chess pieces to their respective image URLs
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -41,36 +39,86 @@
       'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
     };
 
+    const initialPlayer = 'white';
+
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
+      const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
+      const [gameOver, setGameOver] = React.useState(false);
 
-      // Handle square click for moving pieces
-      function handleClick(row, col) {
+      const resetGame = () => {
+        setGame(initialGameState);
+        setSelectedSquare(null);
+        setCurrentPlayer(initialPlayer);
+        setGameOver(false);
+      };
+
+      const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
+        // Add logic for checking valid moves for each piece type.
+        const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
+
+        // Example for validating moves (this can be expanded for all pieces):
+        const direction = currentPlayer === 'white' ? -1 : 1;
+
+        if (piece.toLowerCase() === 'p') {
+          // Pawn moves
+          if (fromCol === toCol && game[toRow][toCol] === '') {
+            return fromRow + direction === toRow; // Normal move
+          }
+          if (Math.abs(fromCol - toCol) === 1 && game[toRow][toCol] && opponentPieces.includes(game[toRow][toCol])) {
+            return fromRow + direction === toRow; // Capture
+          }
+        }
+
+        // Add logic for other pieces here...
+
+        return false;
+      };
+
+      const handleClick = (row, col) => {
+        if (gameOver) return;
+
         if (selectedSquare) {
           const newGame = game.map(row => row.slice());
           const [selectedRow, selectedCol] = selectedSquare;
+          const selectedPiece = newGame[selectedRow][selectedCol];
 
-          // Move the piece to the new location
-          newGame[row][col] = newGame[selectedRow][selectedCol];
-          newGame[selectedRow][selectedCol] = '';
-          setGame(newGame);
-          setSelectedSquare(null);
+          if (isMoveValid(selectedPiece, selectedRow, selectedCol, row, col)) {
+            // Move the piece
+            const capturedPiece = newGame[row][col];
+            newGame[row][col] = selectedPiece;
+            newGame[selectedRow][selectedCol] = '';
+
+            // Check for king capture
+            if (capturedPiece && capturedPiece.toLowerCase() === 'k') {
+              setGameOver(true);
+              alert(`${currentPlayer === 'white' ? 'Black' : 'White'} wins!`);
+              return;
+            }
+
+            setGame(newGame);
+            setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+            setSelectedSquare(null);
+            const utterance = new SpeechSynthesisUtterance(`${selectedPiece} moved to ${row}, ${col}`);
+            window.speechSynthesis.speak(utterance);
+          }
         } else {
-          if (game[row][col]) {
+          if (game[row][col] && (currentPlayer === 'white' ? game[row][col].toUpperCase() === game[row][col] : game[row][col].toLowerCase() === game[row][col])) {
             setSelectedSquare([row, col]);
           }
         }
-      }
+      };
 
       return (
         <div>
+          <h2>{gameOver ? 'Game Over' : `${currentPlayer}'s Turn`}</h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+          <button onClick={resetGame}>Restart Game</button>
         </div>
       );
     }
 
-    // View: Board and buttons reflecting the game state
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
@@ -103,7 +151,6 @@
         border: '1px solid #999'
       };
 
-      // Display the piece image or an empty square
       const pieceDisplay = () => {
         if (value) {
           return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
@@ -123,3 +170,4 @@
   </script>
 </body>
 </html>
+
