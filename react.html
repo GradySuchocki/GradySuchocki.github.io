@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic-Tac-Toe MVC with HUD and Restart</title>
+  <title>Chessboard with Piece Images</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -13,89 +13,76 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react,stage-3">
-    // Model: game state in 2D array
+    // Model: Starting state of the chessboard in 2D array
     const initialGameState = [
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
+      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
+
+    // Mapping of chess pieces to their respective image URLs
+    const pieceImages = {
+      'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+      'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+      'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+      'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+      'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+      'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+      'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+      'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+      'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+      'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+      'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+      'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
+    };
 
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
-      const [xIsNext, setXIsNext] = React.useState(true);
-      const [winner, setWinner] = React.useState(null);
-      const [isDraw, setIsDraw] = React.useState(false);
-      const [history, setHistory] = React.useState([]); // For HUD messages
+      const [selectedSquare, setSelectedSquare] = React.useState(null);
 
-      // Controller: handle button click
+      // Handle square click for moving pieces
       function handleClick(row, col) {
-        if (winner || game[row][col] !== 0 || isDraw) {
-          return; // Ignore if the game is over or square is filled
-        }
+        if (selectedSquare) {
+          const newGame = game.map(row => row.slice());
+          const [selectedRow, selectedCol] = selectedSquare;
 
-        const newGame = game.map((rowArray, rowIndex) => 
-          rowArray.map((value, colIndex) => 
-            rowIndex === row && colIndex === col ? (xIsNext ? 1 : -1) : value
-          )
-        );
-
-        setGame(newGame);
-        setXIsNext(!xIsNext);
-
-        const gameWinner = checkWinner(newGame, row, col);
-        if (gameWinner) {
-          setWinner(gameWinner);
-          setHistory(prevHistory => [...prevHistory, `Player ${gameWinner === 1 ? 'X' : 'O'} wins!`]);
-        } else if (checkDraw(newGame)) {
-          setIsDraw(true);
-          setHistory(prevHistory => [...prevHistory, "It's a draw!"]);
+          // Move the piece to the new location
+          newGame[row][col] = newGame[selectedRow][selectedCol];
+          newGame[selectedRow][selectedCol] = '';
+          setGame(newGame);
+          setSelectedSquare(null);
         } else {
-          setHistory(prevHistory => [...prevHistory, `Next player: ${xIsNext ? 'O' : 'X'}`]);
+          if (game[row][col]) {
+            setSelectedSquare([row, col]);
+          }
         }
-      }
-
-      // Controller: Restart the game
-      function restartGame() {
-        setGame(initialGameState);
-        setXIsNext(true);
-        setWinner(null);
-        setIsDraw(false);
-        setHistory(["Game restarted! Player X starts."]);
-      }
-
-      // View: Status message
-      let status;
-      if (winner) {
-        status = winner === 1 ? "Player X wins!" : "Player O wins!";
-      } else if (isDraw) {
-        status = "It's a draw!";
-      } else {
-        status = "Next player: " + (xIsNext ? "X" : "O");
       }
 
       return (
         <div>
-          <div>{status}</div>
-          <Board game={game} onSquareClick={handleClick} />
-          <HUD history={history} />
-          <button onClick={restartGame} style={{ marginTop: '10px', padding: '10px', fontSize: '16px' }}>
-            Restart Game
-          </button>
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
         </div>
       );
     }
 
     // View: Board and buttons reflecting the game state
-    function Board({ game, onSquareClick }) {
+    function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
           {game.map((row, rowIndex) => (
-            <div key={rowIndex} className="board-row">
+            <div key={rowIndex} style={{ display: 'flex' }}>
               {row.map((value, colIndex) => (
                 <Square
                   key={colIndex}
                   value={value}
                   onClick={() => onSquareClick(rowIndex, colIndex)}
+                  isLight={(rowIndex + colIndex) % 2 === 0}
+                  isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
                 />
               ))}
             </div>
@@ -104,77 +91,35 @@
       );
     }
 
-    function Square({ value, onClick }) {
-      let displayValue;
-      if (value === 1) displayValue = 'X';
-      else if (value === -1) displayValue = 'O';
-      else displayValue = '';
+    function Square({ value, onClick, isLight, isSelected }) {
+      const squareStyle = {
+        width: '80px',
+        height: '80px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        cursor: 'pointer',
+        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
+        border: '1px solid #999'
+      };
+
+      // Display the piece image or an empty square
+      const pieceDisplay = () => {
+        if (value) {
+          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
+        }
+        return null;
+      };
 
       return (
-        <button 
-          onClick={onClick}
-          style={{
-            width: '100px', 
-            height: '100px',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            verticalAlign: 'middle'
-          }}
-        >
-          {displayValue}
+        <button style={squareStyle} onClick={onClick}>
+          {pieceDisplay()}
         </button>
       );
     }
 
-    // View: HUD (Heads-Up Display) to show event messages
-    function HUD({ history }) {
-      return (
-        <div style={{ marginTop: '20px', maxHeight: '150px', overflowY: 'auto' }}>
-          <ul>
-            {history.map((message, index) => (
-              <li key={index}>{message}</li>
-            ))}
-          </ul>
-        </div>
-      );
-    }
-
-    // Controller: check if there's a winner based on the most recent move
-    function checkWinner(game, row, col) {
-      const player = game[row][col];
-
-      // Check the row
-      if (game[row].every(cell => cell === player)) {
-        return player;
-      }
-
-      // Check the column
-      if (game.every(rowArray => rowArray[col] === player)) {
-        return player;
-      }
-
-      // Check diagonal (top-left to bottom-right)
-      if (row === col && game.every((rowArray, index) => rowArray[index] === player)) {
-        return player;
-      }
-
-      // Check anti-diagonal (top-right to bottom-left)
-      if (row + col === 2 && game.every((rowArray, index) => rowArray[2 - index] === player)) {
-        return player;
-      }
-
-      return null;
-    }
-
-    // Controller: check if the game is a draw (i.e., no empty spaces left)
-    function checkDraw(game) {
-      return game.flat().every(cell => cell !== 0);
-    }
-
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<Game />);
-
   </script>
 </body>
 </html>
