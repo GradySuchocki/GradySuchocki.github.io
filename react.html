@@ -28,11 +28,6 @@
       text-align: center;
     }
 
-    .timer {
-      font-size: 20px;
-      margin: 10px 0;
-    }
-
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -132,26 +127,7 @@
       const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
       const [gameOver, setGameOver] = React.useState(false);
       const [winner, setWinner] = React.useState(null);
-      const [timer, setTimer] = React.useState(3600); // 60 minutes in seconds
-      const [gameStarted, setGameStarted] = React.useState(false);
-
-      React.useEffect(() => {
-        let interval;
-        if (gameStarted && !gameOver) {
-          interval = setInterval(() => {
-            setTimer(prev => {
-              if (prev <= 0) {
-                clearInterval(interval);
-                setGameOver(true);
-                setWinner(currentPlayer === 'white' ? 'Black' : 'White');
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-        }
-        return () => clearInterval(interval);
-      }, [gameStarted, gameOver, currentPlayer]);
+      const [speechEnabled, setSpeechEnabled] = React.useState(true); // New state for speech
 
       const resetGame = () => {
         setGame(initialGameState);
@@ -159,15 +135,18 @@
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
         setWinner(null);
-        setTimer(3600); // Reset timer
-        setGameStarted(false); // Reset game started flag
       };
 
       const speakMove = (piece, from, to) => {
+        if (!speechEnabled) return; // Only speak if enabled
         const fromSquare = String.fromCharCode(97 + from[1]) + (8 - from[0]);
         const toSquare = String.fromCharCode(97 + to[1]) + (8 - to[0]);
         const speech = new SpeechSynthesisUtterance(`Move ${piece} from ${fromSquare} to ${toSquare}`);
         window.speechSynthesis.speak(speech);
+      };
+
+      const toggleSpeech = () => {
+        setSpeechEnabled(!speechEnabled); // Toggle speech state
       };
 
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
@@ -260,9 +239,6 @@
             setGame(newGame);
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
             setSelectedSquare(null);
-            if (!gameStarted) {
-              setGameStarted(true);
-            }
           } else {
             setSelectedSquare(null);
           }
@@ -277,20 +253,14 @@
         return (currentPlayer === 'white' ? piece === piece.toUpperCase() : piece === piece.toLowerCase());
       };
 
-      const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-      };
-
       return (
         <div className="board-container">
           <h2>
             {gameOver ? `${winner} wins!` : `${currentPlayer}'s Turn`}
           </h2>
-          <div className="timer">Time Remaining: {formatTime(timer)}</div>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <button onClick={resetGame}>Restart Game</button>
+          <button onClick={toggleSpeech}>{speechEnabled ? 'Disable Speech' : 'Enable Speech'}</button>
         </div>
       );
     }
@@ -330,6 +300,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
