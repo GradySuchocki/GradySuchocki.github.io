@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Piece Images</title>
+  <title>Chess Game</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -47,7 +47,7 @@
 
     .board-container {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
     }
 
@@ -86,6 +86,11 @@
     .piece {
       width: 70px;
       height: 70px;
+    }
+
+    .move-history {
+      margin-left: 40px;
+      font-family: 'Playfair Display', serif;
     }
   </style>
 </head>
@@ -140,6 +145,7 @@
       const [gameOver, setGameOver] = React.useState(false);
       const [winner, setWinner] = React.useState(null);
       const [speechEnabled, setSpeechEnabled] = React.useState(true); // New state for speech
+      const [moveHistory, setMoveHistory] = React.useState([]); // Move history
 
       const resetGame = () => {
         setGame(initialGameState);
@@ -148,6 +154,7 @@
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
         setWinner(null);
+        setMoveHistory([]); // Reset move history
       };
 
       const speakMove = (piece, from, to) => {
@@ -232,6 +239,11 @@
             // Speak the move
             speakMove(selectedPiece, [selectedRow, selectedCol], [row, col]);
 
+            // Update move history
+            const fromSquare = String.fromCharCode(97 + selectedCol) + (8 - selectedRow);
+            const toSquare = String.fromCharCode(97 + col) + (8 - row);
+            setMoveHistory([...moveHistory, `${selectedPiece} from ${fromSquare} to ${toSquare}`]);
+
             // Switch players
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
             setSelectedSquare(null);
@@ -247,7 +259,7 @@
 
       return (
         <div className="board-container">
-          <h2>Chess Game</h2>
+          <h2>{currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn</h2>
           <button onClick={resetGame}>Reset Game</button>
           <button onClick={toggleSpeech}>
             {speechEnabled ? 'Disable Speech' : 'Enable Speech'}
@@ -271,6 +283,14 @@
               </div>
             ))}
           </div>
+          <div className="move-history">
+            <h3>Move History</h3>
+            <ul>
+              {moveHistory.map((move, index) => (
+                <li key={index}>{move}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       );
     }
@@ -279,6 +299,7 @@
   </script>
 </body>
 </html>
+
 
 
 
