@@ -161,7 +161,7 @@
         if (!speechEnabled) return; // Only speak if enabled
         const fromSquare = String.fromCharCode(97 + from[1]) + (8 - from[0]);
         const toSquare = String.fromCharCode(97 + to[1]) + (8 - to[0]);
-        const speech = new SpeechSynthesisUtterance(Move ${piece} from ${fromSquare} to ${toSquare});
+        const speech = new SpeechSynthesisUtterance(`Move ${piece} from ${fromSquare} to ${toSquare}`);
         window.speechSynthesis.speak(speech);
       };
 
@@ -242,7 +242,7 @@
             // Update move history
             const fromSquare = String.fromCharCode(97 + selectedCol) + (8 - selectedRow);
             const toSquare = String.fromCharCode(97 + col) + (8 - row);
-            setMoveHistory([...moveHistory, ${selectedPiece} from ${fromSquare} to ${toSquare}]);
+            setMoveHistory([...moveHistory, `${selectedPiece} from ${fromSquare} to ${toSquare}`]);
 
             // Switch players
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
@@ -273,7 +273,7 @@
                   return (
                     <div
                       key={colIndex}
-                      className={square ${squareClass} ${isSelected ? 'selected' : ''}}
+                      className={`square ${squareClass} ${isSelected ? 'selected' : ''}`}
                       onClick={() => handleClick(rowIndex, colIndex)}
                     >
                       {piece && <img className="piece" src={pieceImages[piece]} alt={piece} />}
@@ -299,6 +299,19 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
