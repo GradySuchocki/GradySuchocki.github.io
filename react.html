@@ -92,12 +92,6 @@
       margin-left: 40px;
       font-family: 'Playfair Display', serif;
     }
-
-    .game-over {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
@@ -113,6 +107,17 @@
       ['', '', '', '', '', '', '', ''],
       ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ];
+
+    const initialPawnStates = [
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false]
     ];
 
     const pieceImages = {
@@ -134,41 +139,49 @@
 
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
+      const [pawnStates, setPawnStates] = React.useState(initialPawnStates);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [currentPlayer, setCurrentPlayer] = React.useState(initialPlayer);
       const [gameOver, setGameOver] = React.useState(false);
       const [winner, setWinner] = React.useState(null);
-      const [moveHistory, setMoveHistory] = React.useState([]);
+      const [speechEnabled, setSpeechEnabled] = React.useState(true); // New state for speech
+      const [moveHistory, setMoveHistory] = React.useState([]); // Move history
 
       const resetGame = () => {
         setGame(initialGameState);
+        setPawnStates(initialPawnStates);
         setSelectedSquare(null);
         setCurrentPlayer(initialPlayer);
         setGameOver(false);
         setWinner(null);
-        setMoveHistory([]);
+        setMoveHistory([]); // Reset move history
       };
 
-      const checkForKingCapture = (newGame) => {
-        const whiteKingExists = newGame.some(row => row.includes('K'));
-        const blackKingExists = newGame.some(row => row.includes('k'));
-        if (!whiteKingExists) {
-          setGameOver(true);
-          setWinner('Black');
-        } else if (!blackKingExists) {
-          setGameOver(true);
-          setWinner('White');
-        }
+      const speakMove = (piece, from, to) => {
+        if (!speechEnabled) return; // Only speak if enabled
+        const fromSquare = String.fromCharCode(97 + from[1]) + (8 - from[0]);
+        const toSquare = String.fromCharCode(97 + to[1]) + (8 - to[0]);
+        const speech = new SpeechSynthesisUtterance(Move ${piece} from ${fromSquare} to ${toSquare});
+        window.speechSynthesis.speak(speech);
+      };
+
+      const toggleSpeech = () => {
+        setSpeechEnabled(!speechEnabled); // Toggle speech state
       };
 
       const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
         const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
-        
+        const initialRow = currentPlayer === 'white' ? 6 : 1;
+
         // Pawn movement logic
         if (piece.toLowerCase() === 'p') {
           const direction = currentPlayer === 'white' ? -1 : 1;
           if (fromCol === toCol) {
             if (game[toRow][toCol] === '') {
+              // Allow two spaces on first move
+              if (fromRow === initialRow && toRow === fromRow + (2 * direction) && game[fromRow + direction][fromCol] === '') {
+                return true; // Two-square move
+              }
               return fromRow + direction === toRow; // One-square move
             }
           } else if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(game[toRow][toCol])) {
@@ -211,13 +224,25 @@
           const selectedPiece = newGame[selectedRow][selectedCol];
 
           if (isMoveValid(selectedPiece, selectedRow, selectedCol, row, col)) {
+            // Update pawn state if a pawn moves
+            if (selectedPiece.toLowerCase() === 'p') {
+              const newPawnStates = pawnStates.map(row => row.slice());
+              newPawnStates[selectedRow][selectedCol] = true; // Mark this pawn as having moved
+              setPawnStates(newPawnStates);
+            }
+
             // Move the piece
             newGame[row][col] = selectedPiece;
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
 
-            // Check for king capture
-            checkForKingCapture(newGame);
+            // Speak the move
+            speakMove(selectedPiece, [selectedRow, selectedCol], [row, col]);
+
+            // Update move history
+            const fromSquare = String.fromCharCode(97 + selectedCol) + (8 - selectedRow);
+            const toSquare = String.fromCharCode(97 + col) + (8 - row);
+            setMoveHistory([...moveHistory, ${selectedPiece} from ${fromSquare} to ${toSquare}]);
 
             // Switch players
             setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
@@ -236,6 +261,9 @@
         <div className="board-container">
           <h2>{currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn</h2>
           <button onClick={resetGame}>Reset Game</button>
+          <button onClick={toggleSpeech}>
+            {speechEnabled ? 'Disable Speech' : 'Enable Speech'}
+          </button>
           <div className="board">
             {game.map((row, rowIndex) => (
               <div key={rowIndex} className="board-row">
@@ -245,7 +273,7 @@
                   return (
                     <div
                       key={colIndex}
-                      className={`square ${squareClass} ${isSelected ? 'selected' : ''}`}
+                      className={square ${squareClass} ${isSelected ? 'selected' : ''}}
                       onClick={() => handleClick(rowIndex, colIndex)}
                     >
                       {piece && <img className="piece" src={pieceImages[piece]} alt={piece} />}
@@ -263,7 +291,6 @@
               ))}
             </ul>
           </div>
-          {gameOver && <div className="game-over">{winner} wins! Game over.</div>}
         </div>
       );
     }
@@ -272,7 +299,6 @@
   </script>
 </body>
 </html>
-
 
 
 
