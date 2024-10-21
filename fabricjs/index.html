@@ -87,7 +87,6 @@
     const canvas = new fabric.Canvas('canvas');
     let gameState = initialGameState.map(row => row.slice());
     let currentPlayer = 'white';
-    let selectedSquare = null;
     const moveHistory = [];
     let speechEnabled = true;
 
@@ -110,6 +109,7 @@
             fabric.Image.fromURL(pieceImages[piece], img => {
               img.scaleToWidth(70);
               img.set({ left: col * 80 + 5, top: row * 80 + 5, selectable: true });
+              img.hasControls = img.hasBorders = false; // Disable controls for pieces
               canvas.add(img);
             });
           }
@@ -136,6 +136,16 @@
     };
 
     const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
+      if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) return false; // Out of bounds
+
+      const targetPiece = gameState[toRow][toCol];
+      const isOpponentPiece = targetPiece && ((currentPlayer === 'white' && targetPiece === targetPiece.toLowerCase()) || (currentPlayer === 'black' && targetPiece === targetPiece.toUpperCase()));
+
+      // Ensure the piece being moved belongs to the current player
+      if ((currentPlayer === 'white' && piece === piece.toLowerCase()) || (currentPlayer === 'black' && piece === piece.toUpperCase())) {
+        return false; // Invalid move: not this player's piece
+      }
+
       const opponentPieces = currentPlayer === 'white' ? ['r', 'n', 'b', 'q', 'k', 'p'] : ['R', 'N', 'B', 'Q', 'K', 'P'];
       const initialRow = currentPlayer === 'white' ? 6 : 1;
 
@@ -149,29 +159,29 @@
             }
             return fromRow + direction === toRow; // One-square move
           }
-        } else if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(gameState[toRow][toCol])) {
+        } else if (Math.abs(fromCol - toCol) === 1 && opponentPieces.includes(targetPiece)) {
           return fromRow + direction === toRow; // Capture move
         }
       }
 
       // Other pieces' movement logic
       if (piece.toLowerCase() === 'k') {
-        return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
+        return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1 && !isOpponentPiece;
       }
       if (piece.toLowerCase() === 'r') {
-        return (fromRow === toRow || fromCol === toCol) && (gameState[toRow][toCol] === '' || opponentPieces.includes(gameState[toRow][toCol]));
+        return (fromRow === toRow || fromCol === toCol) && (targetPiece === '' || opponentPieces.includes(targetPiece));
       }
       if (piece.toLowerCase() === 'n') {
         return (Math.abs(fromRow - toRow) === 2 && Math.abs(fromCol - toCol) === 1) || (Math.abs(fromRow - toRow) === 1 && Math.abs(fromCol - toCol) === 2);
       }
       if (piece.toLowerCase() === 'b') {
-        return Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) && (gameState[toRow][toCol] === '' || opponentPieces.includes(gameState[toRow][toCol]));
+        return Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) && (targetPiece === '' || opponentPieces.includes(targetPiece));
       }
       if (piece.toLowerCase() === 'q') {
-        return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (gameState[toRow][toCol] === '' || opponentPieces.includes(gameState[toRow][toCol]));
+        return (Math.abs(fromRow - toRow) === Math.abs(fromCol - toCol) || fromRow === toRow || fromCol === toCol) && (targetPiece === '' || opponentPieces.includes(targetPiece));
       }
 
-      return false;
+      return false; // If no rules matched, the move is invalid
     };
 
     const initGame = () => {
@@ -236,7 +246,6 @@
     document.getElementById('reset-button').onclick = () => {
       gameState = initialGameState.map(row => row.slice());
       currentPlayer = 'white';
-      selectedSquare = null;
       moveHistory.length = 0; // Clear move history
       document.getElementById('move-history').innerHTML = '';
       drawBoard();
