@@ -23,7 +23,7 @@
             flex-direction: column;
             align-items: center;
             margin-right: 20px;
-            border: 2px solid black;
+            border: 2px solid black; /* Add border to controls */
             padding: 10px;
             border-radius: 5px;
         }
@@ -58,21 +58,15 @@
             margin-left: 20px;
             font-family: 'Playfair Display', serif;
             max-width: 200px;
-            border: 2px solid black;
+            border: 2px solid black; /* Add border to move history */
             padding: 10px;
             border-radius: 5px;
-        }
-        .turn-display {
-            color: red; /* Default color for White's turn */
-        }
-        .turn-display.black {
-            color: gray; /* Color for Black's turn */
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <h2 id="turn-display" class="turn-display">White's Turn</h2>
+        <h2 id="turn-display">White's Turn</h2>
         <button id="reset-button">Reset Game</button>
         <button id="toggle-speech-button">Enable Speech</button>
     </div>
@@ -215,7 +209,7 @@
             canvas.clear();
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
-                    let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#ffcccc'; // Gray and light red
+                    let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#32CD32';
 
                     if (selectedSquare && selectedSquare[0] === row && selectedSquare[1] === col) {
                         squareColor = '#fff7ae';
@@ -256,6 +250,7 @@
             const piece = getPieceAt(row, col);
             if (piece) {
                 const pieceColor = piece === piece.toUpperCase() ? 'white' : 'black';
+                // Allow selecting a piece only if it's the current player's turn
                 if (pieceColor !== currentPlayer) {
                     return;
                 }
@@ -275,14 +270,13 @@
 
                     currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
                     document.getElementById('turn-display').innerText = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
-                    document.getElementById('turn-display').classList.toggle('black', currentPlayer === 'black');
 
                     if (speechEnabled) {
                         const utterance = new SpeechSynthesisUtterance(moveNotation);
                         speechSynthesis.speak(utterance);
                     }
 
-                    selectedSquare = null;
+                    selectedSquare = null; // Reset selected square
                 } else {
                     selectedSquare = [row, col];
                     calculateValidMoves(row, col);
@@ -301,7 +295,6 @@
             moveHistory.length = 0;
             document.getElementById('move-history').innerHTML = '';
             document.getElementById('turn-display').innerText = "White's Turn";
-            document.getElementById('turn-display').classList.remove('black');
             selectedSquare = null;
             drawBoard();
         };
@@ -318,6 +311,12 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
