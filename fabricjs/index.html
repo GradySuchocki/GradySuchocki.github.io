@@ -38,12 +38,17 @@
         button:hover {
             background-color: #45a049;
         }
+        #game-container {
+            display: flex;
+            align-items: flex-start;
+        }
         #canvas {
             border: 2px solid #333;
         }
         .move-history {
-            margin-top: 20px;
+            margin-left: 20px;
             font-family: 'Playfair Display', serif;
+            max-width: 200px;
         }
     </style>
 </head>
@@ -51,10 +56,12 @@
     <h2 id="turn-display">White's Turn</h2>
     <button id="reset-button">Reset Game</button>
     <button id="toggle-speech-button">Enable Speech</button>
-    <canvas id="canvas" width="640" height="640"></canvas>
-    <div class="move-history">
-        <h3>Move History</h3>
-        <ul id="move-history"></ul>
+    <div id="game-container">
+        <canvas id="canvas" width="640" height="640"></canvas>
+        <div class="move-history">
+            <h3>Move History</h3>
+            <ul id="move-history"></ul>
+        </div>
     </div>
 
     <script>
@@ -285,6 +292,7 @@
     </script>
 </body>
 </html>
+
 
 
 
