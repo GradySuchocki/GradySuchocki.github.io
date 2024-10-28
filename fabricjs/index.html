@@ -100,7 +100,7 @@
         let validMoves = [];
 
         const getPieceAt = (row, col) => {
-            return gameState[row][col] || null;
+            return gameState[row][col] || null; // Adjust based on your piece representation
         };
 
         function isValidMove(fromRow, fromCol, toRow, toCol, piece) {
@@ -195,12 +195,15 @@
             canvas.clear();
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
+                    // Default square colors
                     let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#32CD32';
 
+                    // Highlight selected square
                     if (selectedSquare && selectedSquare[0] === row && selectedSquare[1] === col) {
                         squareColor = '#fff7ae';
                     }
 
+                    // Highlight valid moves
                     if (validMoves.some(([r, c]) => r === row && c === col)) {
                         const alpha = gameState[row][col] ? '80' : '50';
                         squareColor = '#7fff7f' + alpha;
@@ -216,6 +219,7 @@
                     });
                     canvas.add(square);
 
+                    // Draw piece
                     if (gameState[row][col]) {
                         const pieceImg = new fabric.Image.fromURL(pieceImages[gameState[row][col]], img => {
                             img.scaleToWidth(80);
@@ -232,15 +236,6 @@
             const pointer = canvas.getPointer(e.e);
             const col = Math.floor(pointer.x / 80);
             const row = Math.floor(pointer.y / 80);
-
-            const piece = getPieceAt(row, col);
-            if (piece) {
-                const pieceColor = piece === piece.toUpperCase() ? 'white' : 'black';
-                // Allow selecting a piece only if it's the current player's turn
-                if (pieceColor !== currentPlayer) {
-                    return;
-                }
-            }
 
             if (selectedSquare) {
                 const [fromRow, fromCol] = selectedSquare;
@@ -297,5 +292,6 @@
     </script>
 </body>
 </html>
+
 
 
