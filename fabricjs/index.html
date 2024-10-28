@@ -209,7 +209,7 @@
             canvas.clear();
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
-                    let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#32CD32';
+                    let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#ff4d4d'; // Bright red and gray
 
                     if (selectedSquare && selectedSquare[0] === row && selectedSquare[1] === col) {
                         squareColor = '#fff7ae';
@@ -217,7 +217,7 @@
 
                     if (validMoves.some(([r, c]) => r === row && c === col)) {
                         const alpha = gameState[row][col] ? '80' : '50';
-                        squareColor = '#7fff7f' + alpha;
+                        squareColor = '#7fff7f' + alpha; // Optional highlight color
                     }
 
                     const square = new fabric.Rect({
@@ -311,16 +311,5 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
 
 
