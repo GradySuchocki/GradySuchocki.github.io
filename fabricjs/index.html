@@ -247,12 +247,24 @@
 
                 if (validMoves.some(([r, c]) => r === row && c === col)) {
                     const piece = gameState[fromRow][fromCol];
+                    const capturedPiece = gameState[row][col]; // Check if a piece is being captured
                     gameState[row][col] = piece;
                     gameState[fromRow][fromCol] = '';
 
                     const moveNotation = `${piece.toUpperCase()} from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
-                    moveHistory.push(moveNotation);
-                    document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
+                    if (capturedPiece) {
+                        const capturedPieceName = capturedPiece.toUpperCase();
+                        moveHistory.push(`${moveNotation}, capturing ${capturedPieceName}`);
+                        document.getElementById('move-history').innerHTML += `<li>${moveNotation}, capturing ${capturedPieceName}</li>`;
+                        
+                        if (speechEnabled) {
+                            const utterance = new SpeechSynthesisUtterance(`Captured ${capturedPieceName}`);
+                            speechSynthesis.speak(utterance);
+                        }
+                    } else {
+                        moveHistory.push(moveNotation);
+                        document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
+                    }
 
                     currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
                     document.getElementById('turn-display').innerText = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
@@ -297,6 +309,7 @@
     </script>
 </body>
 </html>
+
 
 
 
