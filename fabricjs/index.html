@@ -23,7 +23,7 @@
             flex-direction: column;
             align-items: center;
             margin-right: 20px;
-            border: 2px solid black; /* Add border to controls */
+            border: 2px solid black;
             padding: 10px;
             border-radius: 5px;
         }
@@ -63,7 +63,7 @@
             margin-left: 20px;
             font-family: 'Playfair Display', serif;
             max-width: 200px;
-            border: 2px solid black; /* Add border to move history */
+            border: 2px solid black;
             padding: 10px;
             border-radius: 5px;
         }
@@ -120,7 +120,6 @@
         let validMoves = [];
         let timer;
         let timeRemaining = 300; // 5 minutes in seconds
-        let timerStarted = false; // To track if timer has started
 
         const getPieceAt = (row, col) => {
             return gameState[row][col] || null;
@@ -259,8 +258,6 @@
         };
 
         const startTimer = () => {
-            if (timerStarted) return; // Prevent multiple starts
-            timerStarted = true; // Set timer as started
             clearInterval(timer);
             timeRemaining = 300; // Reset to 5 minutes
             updateTimerDisplay();
@@ -283,7 +280,6 @@
             const piece = getPieceAt(row, col);
             if (piece) {
                 const pieceColor = piece === piece.toUpperCase() ? 'white' : 'black';
-                // Allow selecting a piece only if it's the current player's turn
                 if (pieceColor !== currentPlayer) {
                     return;
                 }
@@ -310,7 +306,7 @@
                     }
 
                     selectedSquare = null; // Reset selected square
-                    startTimer(); // Start the timer on the first move
+                    startTimer(); // Restart the timer on turn switch
                 } else {
                     selectedSquare = [row, col];
                     calculateValidMoves(row, col);
@@ -332,7 +328,6 @@
             selectedSquare = null;
             clearInterval(timer);
             timeRemaining = 300; // Reset timer
-            timerStarted = false; // Reset timer start flag
             updateTimerDisplay();
             drawBoard();
         };
@@ -344,11 +339,13 @@
 
         canvas.on('mouse:down', handleSquareClick);
 
-        // Initial draw
+        // Initial draw and timer start
         drawBoard();
+        startTimer();
     </script>
 </body>
 </html>
+
 
 
 
