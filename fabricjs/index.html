@@ -108,9 +108,11 @@
 
             const pieceType = piece.toLowerCase();
             const color = piece === piece.toUpperCase() ? 'white' : 'black';
-
             const destPiece = getPieceAt(toRow, toCol);
-            if (destPiece && (destPiece === destPiece.toUpperCase() ? 'white' : 'black') === color) {
+            const destColor = destPiece ? (destPiece === destPiece.toUpperCase() ? 'white' : 'black') : null;
+
+            // Check if the destination piece is friendly
+            if (destColor === color) {
                 return false;
             }
 
@@ -125,27 +127,27 @@
                     const startRow = color === 'white' ? 6 : 1;
 
                     if (colDiff === 0 && !destPiece) {
-                        if (rowDiff === direction) return true;
+                        if (rowDiff === direction) return true; // Single move
                         if (fromRow === startRow && rowDiff === 2 * direction && !getPieceAt(fromRow + direction, fromCol)) {
-                            return true;
+                            return true; // Double move
                         }
                     }
 
+                    // Capture
                     if (absColDiff === 1 && rowDiff === direction && destPiece) {
                         return true; // Allow capturing
                     }
                     return false;
 
                 case 'r':
-                    if (fromRow !== toRow && fromCol !== toCol) return false;
+                    if (fromRow !== toRow && fromCol !== toCol) return false; // Must move in straight line
                     return !isPathBlocked(fromRow, fromCol, toRow, toCol);
 
                 case 'n':
-                    return (absRowDiff === 2 && absColDiff === 1) ||
-                           (absRowDiff === 1 && absColDiff === 2);
+                    return (absRowDiff === 2 && absColDiff === 1) || (absRowDiff === 1 && absColDiff === 2);
 
                 case 'b':
-                    if (absRowDiff !== absColDiff) return false;
+                    if (absRowDiff !== absColDiff) return false; // Must move diagonally
                     return !isPathBlocked(fromRow, fromCol, toRow, toCol);
 
                 case 'q':
@@ -309,3 +311,4 @@
     </script>
 </body>
 </html>
+
