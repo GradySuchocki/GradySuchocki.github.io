@@ -92,56 +92,92 @@
         let selectedSquare = null;
         let validMoves = [];
 
-        const isMoveValid = (piece, fromRow, fromCol, toRow, toCol) => {
-            if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) return false;
+        const getPieceAt = (row, col) => {
+            return gameState[row][col] || null; // Adjust based on your piece representation
+        };
 
-            // Check if the piece belongs to the current player
-            if ((currentPlayer === 'white' && piece !== piece.toUpperCase()) ||
-                (currentPlayer === 'black' && piece !== piece.toLowerCase())) {
+        function isValidMove(fromRow, fromCol, toRow, toCol, piece) {
+            if (fromRow === toRow && fromCol === toCol) return false;
+
+            const pieceType = piece.toLowerCase();
+            const color = piece === piece.toUpperCase() ? 'white' : 'black';
+
+            const destPiece = getPieceAt(toRow, toCol);
+            if (destPiece && (destPiece === destPiece.toUpperCase() ? 'white' : 'black') === color) {
                 return false;
             }
 
-            const targetPiece = gameState[toRow][toCol];
-            const isOpponentPiece = targetPiece &&
-                ((currentPlayer === 'white' && targetPiece === targetPiece.toLowerCase()) ||
-                 (currentPlayer === 'black' && targetPiece === targetPiece.toUpperCase()));
+            const rowDiff = toRow - fromRow;
+            const colDiff = toCol - fromCol;
+            const absRowDiff = Math.abs(rowDiff);
+            const absColDiff = Math.abs(colDiff);
 
-            // Same color piece in target square
-            if (targetPiece && !isOpponentPiece) return false;
+            switch (pieceType) {
+                case 'p':
+                    const direction = color === 'white' ? -1 : 1;
+                    const startRow = color === 'white' ? 6 : 1;
 
-            const initialRow = currentPlayer === 'white' ? 6 : 1;
-
-            if (piece.toLowerCase() === 'p') {
-                const direction = currentPlayer === 'white' ? -1 : 1;
-                if (fromCol === toCol) {
-                    if (gameState[toRow][toCol] === '') {
-                        if (fromRow === initialRow && toRow === fromRow + (2 * direction) &&
-                            gameState[fromRow + direction][fromCol] === '') {
+                    if (colDiff === 0 && !destPiece) {
+                        if (rowDiff === direction) return true;
+                        if (fromRow === startRow && rowDiff === 2 * direction && !getPieceAt(fromRow + direction, fromCol)) {
                             return true;
                         }
-                        return fromRow + direction === toRow;
                     }
-                } else if (Math.abs(fromCol - toCol) === 1 && isOpponentPiece) {
-                    return fromRow + direction === toRow;
-                }
+
+                    if (absColDiff === 1 && rowDiff === direction && destPiece) {
+                        return true;
+                    }
+                    return false;
+
+                case 'r':
+                    if (fromRow !== toRow && fromCol !== toCol) return false;
+                    return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+
+                case 'n':
+                    return (absRowDiff === 2 && absColDiff === 1) ||
+                           (absRowDiff === 1 && absColDiff === 2);
+
+                case 'b':
+                    if (absRowDiff !== absColDiff) return false;
+                    return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+
+                case 'q':
+                    if (fromRow === toRow || fromCol === toCol || absRowDiff === absColDiff) {
+                        return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+                    }
+                    return false;
+
+                case 'k':
+                    return absRowDiff <= 1 && absColDiff <= 1;
+
+                default:
+                    return false;
+            }
+        }
+
+        function isPathBlocked(fromRow, fromCol, toRow, toCol) {
+            const rowDir = fromRow === toRow ? 0 : (toRow - fromRow) / Math.abs(toRow - fromRow);
+            const colDir = fromCol === toCol ? 0 : (toCol - fromCol) / Math.abs(toCol - fromCol);
+
+            let currentRow = fromRow + rowDir;
+            let currentCol = fromCol + colDir;
+
+            while (currentRow !== toRow || currentCol !== toCol) {
+                if (getPieceAt(currentRow, currentCol)) return true;
+                currentRow += rowDir;
+                currentCol += colDir;
             }
 
-            if (piece.toLowerCase() === 'k') {
-                return Math.abs(fromRow - toRow) <= 1 &&
-                       Math.abs(fromCol - toCol) <= 1 &&
-                       (!targetPiece || isOpponentPiece);
-            }
-
-            return true; // Simplified for now
-        };
+            return false;
+        }
 
         const calculateValidMoves = (row, col) => {
             const piece = gameState[row][col];
             validMoves = [];
-           
+
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
-                    if (isMoveValid(piece, row, col, i, j)) {
+                    if (isValidMove(row, col, i, j, piece)) {
                         validMoves.push([i, j]);
                     }
                 }
@@ -154,12 +190,12 @@
                 for (let col = 0; col < 8; col++) {
                     // Default square colors
                     let squareColor = (row + col) % 2 === 0 ? '#d3d3d3' : '#32CD32';
-                   
+
                     // Highlight selected square
                     if (selectedSquare && selectedSquare[0] === row && selectedSquare[1] === col) {
                         squareColor = '#fff7ae';
                     }
-                   
+
                     // Highlight valid moves
                     if (validMoves.some(([r, c]) => r === row && c === col)) {
                         const alpha = gameState[row][col] ? '80' : '50';
@@ -176,18 +212,11 @@
                     });
                     canvas.add(square);
 
-                    const piece = gameState[row][col];
-                    if (piece) {
-                        fabric.Image.fromURL(pieceImages[piece], img => {
-                            img.scaleToWidth(70);
-                            img.set({
-                                left: col * 80 + 5,
-                                top: row * 80 + 5,
-                                selectable: true,
-                                hasBorders: false,
-                                hasControls: false
-                            });
-                            img.on('selected', () => handlePieceSelect(row, col));
+                    // Draw piece
+                    if (gameState[row][col]) {
+                        const pieceImg = new fabric.Image.fromURL(pieceImages[gameState[row][col]], img => {
+                            img.scaleToWidth(80);
+                            img.set({ left: col * 80, top: row * 80, selectable: false });
                             canvas.add(img);
                         });
                     }
@@ -196,99 +225,67 @@
             canvas.renderAll();
         };
 
-        const animateMove = (fromRow, fromCol, toRow, toCol, callback) => {
-            const piece = canvas.getObjects().find(obj =>
-                obj instanceof fabric.Image &&
-                obj.left === fromCol * 80 + 5 &&
-                obj.top === fromRow * 80 + 5
-            );
+        const handleSquareClick = (e) => {
+            const pointer = canvas.getPointer(e.e);
+            const col = Math.floor(pointer.x / 80);
+            const row = Math.floor(pointer.y / 80);
 
-            if (piece) {
-                piece.animate({
-                    left: toCol * 80 + 5,
-                    top: toRow * 80 + 5
-                }, {
-                    duration: 200,
-                    onChange: canvas.renderAll.bind(canvas),
-                    onComplete: () => {
-                        if (callback) callback();
-                        drawBoard();
-                    }
-                });
-            }
-        };
-
-        const handlePieceSelect = (row, col) => {
             if (selectedSquare) {
-                const [selectedRow, selectedCol] = selectedSquare;
-               
-                if (row === selectedRow && col === selectedCol) {
-                    selectedSquare = null;
-                    validMoves = [];
-                    drawBoard();
-                    return;
-                }
+                const [fromRow, fromCol] = selectedSquare;
 
-                const selectedPiece = gameState[selectedRow][selectedCol];
-               
-                if (isMoveValid(selectedPiece, selectedRow, selectedCol, row, col)) {
-                    const capturedPiece = gameState[row][col];
-                   
-                    // Animate the move
-                    animateMove(selectedRow, selectedCol, row, col, () => {
-                        gameState[row][col] = selectedPiece;
-                        gameState[selectedRow][selectedCol] = '';
-                       
-                        currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-                        updateTurnDisplay();
-                       
-                        const fromSquare = String.fromCharCode(97 + selectedCol) + (8 - selectedRow);
-                        const toSquare = String.fromCharCode(97 + col) + (8 - row);
-                        moveHistory.push(`${selectedPiece} from ${fromSquare} to ${toSquare}`);
-                        document.getElementById('move-history').innerHTML +=
-                            `<li>${moveHistory[moveHistory.length - 1]}</li>`;
-                    });
-                }
-                selectedSquare = null;
-                validMoves = [];
-            } else {
-                if (gameState[row][col]) {
+                if (validMoves.some(([r, c]) => r === row && c === col)) {
+                    const piece = gameState[fromRow][fromCol];
+                    gameState[row][col] = piece;
+                    gameState[fromRow][fromCol] = '';
+
+                    const moveNotation = `${piece.toUpperCase()} from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
+                    moveHistory.push(moveNotation);
+                    document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
+
+                    currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                    document.getElementById('turn-display').innerText = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
+
+                    if (speechEnabled) {
+                        const utterance = new SpeechSynthesisUtterance(moveNotation);
+                        speechSynthesis.speak(utterance);
+                    }
+
+                    selectedSquare = null; // Reset selected square
+                } else {
                     selectedSquare = [row, col];
                     calculateValidMoves(row, col);
                 }
+            } else {
+                selectedSquare = [row, col];
+                calculateValidMoves(row, col);
             }
-            drawBoard();
-        };
 
-        const updateTurnDisplay = () => {
-            document.getElementById('turn-display').innerText =
-                `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
+            drawBoard();
         };
 
         document.getElementById('reset-button').onclick = () => {
             gameState = initialGameState.map(row => row.slice());
             currentPlayer = 'white';
             moveHistory.length = 0;
-            selectedSquare = null;
-            validMoves = [];
             document.getElementById('move-history').innerHTML = '';
+            document.getElementById('turn-display').innerText = "White's Turn";
+            selectedSquare = null;
             drawBoard();
-            updateTurnDisplay();
         };
 
         document.getElementById('toggle-speech-button').onclick = () => {
             speechEnabled = !speechEnabled;
-            document.getElementById('toggle-speech-button').innerText =
-                speechEnabled ? 'Disable Speech' : 'Enable Speech';
+            document.getElementById('toggle-speech-button').innerText = speechEnabled ? 'Disable Speech' : 'Enable Speech';
         };
 
-        window.onload = () => {
-            drawBoard();
-            updateTurnDisplay();
-        };
+        canvas.on('mouse:down', handleSquareClick);
+
+        // Initial draw
+        drawBoard();
     </script>
 </body>
 </html>
+
 
 
 
