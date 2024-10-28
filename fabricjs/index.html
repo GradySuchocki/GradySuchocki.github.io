@@ -108,11 +108,9 @@
 
             const pieceType = piece.toLowerCase();
             const color = piece === piece.toUpperCase() ? 'white' : 'black';
-            const destPiece = getPieceAt(toRow, toCol);
-            const destColor = destPiece ? (destPiece === destPiece.toUpperCase() ? 'white' : 'black') : null;
 
-            // Check if the destination piece is friendly
-            if (destColor === color) {
+            const destPiece = getPieceAt(toRow, toCol);
+            if (destPiece && (destPiece === destPiece.toUpperCase() ? 'white' : 'black') === color) {
                 return false;
             }
 
@@ -127,27 +125,27 @@
                     const startRow = color === 'white' ? 6 : 1;
 
                     if (colDiff === 0 && !destPiece) {
-                        if (rowDiff === direction) return true; // Single move
+                        if (rowDiff === direction) return true;
                         if (fromRow === startRow && rowDiff === 2 * direction && !getPieceAt(fromRow + direction, fromCol)) {
-                            return true; // Double move
+                            return true;
                         }
                     }
 
-                    // Capture
                     if (absColDiff === 1 && rowDiff === direction && destPiece) {
-                        return true; // Allow capturing
+                        return true;
                     }
                     return false;
 
                 case 'r':
-                    if (fromRow !== toRow && fromCol !== toCol) return false; // Must move in straight line
+                    if (fromRow !== toRow && fromCol !== toCol) return false;
                     return !isPathBlocked(fromRow, fromCol, toRow, toCol);
 
                 case 'n':
-                    return (absRowDiff === 2 && absColDiff === 1) || (absRowDiff === 1 && absColDiff === 2);
+                    return (absRowDiff === 2 && absColDiff === 1) ||
+                           (absRowDiff === 1 && absColDiff === 2);
 
                 case 'b':
-                    if (absRowDiff !== absColDiff) return false; // Must move diagonally
+                    if (absRowDiff !== absColDiff) return false;
                     return !isPathBlocked(fromRow, fromCol, toRow, toCol);
 
                 case 'q':
@@ -249,24 +247,12 @@
 
                 if (validMoves.some(([r, c]) => r === row && c === col)) {
                     const piece = gameState[fromRow][fromCol];
-                    const capturedPiece = gameState[row][col]; // Check if a piece is being captured
                     gameState[row][col] = piece;
                     gameState[fromRow][fromCol] = '';
 
                     const moveNotation = `${piece.toUpperCase()} from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
-                    if (capturedPiece) {
-                        const capturedPieceName = capturedPiece.toUpperCase();
-                        moveHistory.push(`${moveNotation}, capturing ${capturedPieceName}`);
-                        document.getElementById('move-history').innerHTML += `<li>${moveNotation}, capturing ${capturedPieceName}</li>`;
-                        
-                        if (speechEnabled) {
-                            const utterance = new SpeechSynthesisUtterance(`Captured ${capturedPieceName}`);
-                            speechSynthesis.speak(utterance);
-                        }
-                    } else {
-                        moveHistory.push(moveNotation);
-                        document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
-                    }
+                    moveHistory.push(moveNotation);
+                    document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
 
                     currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
                     document.getElementById('turn-display').innerText = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
@@ -311,4 +297,5 @@
     </script>
 </body>
 </html>
+
 
