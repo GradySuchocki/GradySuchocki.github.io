@@ -7,9 +7,8 @@
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
 </head>
 <body>
-    <div id="turnIndicator" style="position: absolute; top: 10px; left: 10px; font-size: 24px; font-weight: bold;">White's Turn</div>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
-    <button id="exportButton" style="position: absolute; top: 50px; left: 10px;">Export STL</button>
+    <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -88,42 +87,41 @@
         const pieces = [];
 
         // Place pawns
+       // Place pawns
         for (let i = 0; i < 8; i++) {
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
         }
-
+        
         // Place rooks
         pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
         pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
         pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
         pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
-
+        
         // Place knights
         pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
         pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
         pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
         pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
-
+        
         // Place bishops
         pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
         pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
         pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
         pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
-
+        
         // Place queens
         pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Queen
         pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Queen
-
+        
         // Place kings
         pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White King
         pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black King
 
+
         let selectedPiece = null;
         let currentTurn = "white"; // Start with white's turn
-
-        const turnIndicator = document.getElementById("turnIndicator");
-        turnIndicator.textContent = "White's Turn"; // Initial turn display
 
         const isValidMove = (piece, targetTile) => {
             const dx = targetTile.position.x - piece.position.x;
@@ -177,7 +175,6 @@
                     selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
                     currentTurn = currentTurn === "white" ? "black" : "white"; // Switch turn
-                    turnIndicator.textContent = `${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}'s Turn`; // Update turn display
                 }
             }
         };
@@ -204,6 +201,9 @@
     </script>
 </body>
 </html>
+
+
+
 
 
 
