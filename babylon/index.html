@@ -87,38 +87,36 @@
         const pieces = [];
 
         // Place pawns
-       // Place pawns
         for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
+            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), "white")); // White Pawns
+            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), "black")); // Black Pawns
         }
-        
-        // Place rooks
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
-        
-        // Place knights
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
-        
-        // Place bishops
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
-        
-        // Place queens
-        pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Queen
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Queen
-        
-        // Place kings
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White King
-        pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black King
 
+        // Place rooks
+        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), "white")); // White Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), "white")); // White Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), "black")); // Black Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), "black")); // Black Rook
+
+        // Place knights
+        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), "white")); // White Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), "white")); // White Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), "black")); // Black Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), "black")); // Black Knight
+
+        // Place bishops
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), "white")); // White Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), "white")); // White Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), "black")); // Black Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), "black")); // Black Bishop
+
+        // Place queens
+        pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), "white")); // White Queen
+        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), "black")); // Black Queen
+
+        // Place kings
+        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), "white")); // White King
+        pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), "black")); // Black King
 
         let selectedPiece = null;
         let currentTurn = "white"; // Start with white's turn
@@ -201,13 +199,6 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 
