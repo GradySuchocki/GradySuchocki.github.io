@@ -77,6 +77,7 @@
                 selectedPiece = piece;
             }));
 
+            piece.type = name; // Store the piece type for movement validation
             return piece;
         };
 
@@ -87,7 +88,6 @@
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
         }
-
 
         // Place rooks
         pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
@@ -117,10 +117,33 @@
 
         let selectedPiece = null;
 
+        const isValidMove = (piece, targetTile) => {
+            const dx = targetTile.position.x - piece.position.x;
+            const dz = targetTile.position.z - piece.position.z;
+
+            switch (piece.type) {
+                case "pawn":
+                    const direction = piece.material.diffuseColor.equals(new BABYLON.Color3(1, 1, 1)) ? 1 : -1; // Determine direction based on color
+                    return dz === direction && dx === 0; // Normal move
+                case "rook":
+                    return dx === 0 || dz === 0; // Rook moves straight
+                case "knight":
+                    return (Math.abs(dx) === 2 && Math.abs(dz) === 1) || (Math.abs(dx) === 1 && Math.abs(dz) === 2); // Knight moves in L shape
+                case "bishop":
+                    return Math.abs(dx) === Math.abs(dz); // Bishop moves diagonally
+                case "queen":
+                    return Math.abs(dx) === Math.abs(dz) || dx === 0 || dz === 0; // Queen moves like rook and bishop
+                case "king":
+                    return Math.abs(dx) <= 1 && Math.abs(dz) <= 1; // King moves one square in any direction
+                default:
+                    return false;
+            }
+        };
+
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
-                if (pickedTile && pickedTile.name.startsWith("tile")) {
+                if (pickedTile && pickedTile.name.startsWith("tile") && isValidMove(selectedPiece, pickedTile)) {
                     selectedPiece.position.x = pickedTile.position.x;
                     selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
@@ -150,6 +173,7 @@
     </script>
 </body>
 </html>
+
 
 
 
