@@ -123,8 +123,7 @@
 
             switch (piece.type) {
                 case "pawn":
-                    const direction = piece.material.diffuseColor.equals(new BABYLON.Color3(1, 1, 1)) ? 1 : -1; // Determine direction based on color
-                    return dz === direction && dx === 0; // Normal move
+                    return dz === 1 && dx === 0; // Simple forward move for pawns (customize as needed)
                 case "rook":
                     return dx === 0 || dz === 0; // Rook moves straight
                 case "knight":
