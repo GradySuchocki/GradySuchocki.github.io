@@ -123,7 +123,29 @@
 
             switch (piece.type) {
                 case "pawn":
-                    return dz === 1 && dx === 0; // Simple forward move for pawns (customize as needed)
+                    // Move forward one square
+                    if (dz === 1 && dx === 0) {
+                        return true; // Regular move
+                    }
+                    // Initial double move
+                    if (dz === 2 && dx === 0 && piece.position.z === 2.5) {
+                        return true; // Double move for white pawns
+                    }
+                    // Capture diagonally
+                    if (dz === 1 && Math.abs(dx) === 1) {
+                        return true; // Capture
+                    }
+                    // Black pawn moves
+                    if (dz === -1 && dx === 0) {
+                        return true; // Regular move for black pawns
+                    }
+                    if (dz === -2 && dx === 0 && piece.position.z === -2.5) {
+                        return true; // Double move for black pawns
+                    }
+                    if (dz === -1 && Math.abs(dx) === 1) {
+                        return true; // Capture for black pawns
+                    }
+                    return false;
                 case "rook":
                     return dx === 0 || dz === 0; // Rook moves straight
                 case "knight":
@@ -172,8 +194,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
