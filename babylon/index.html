@@ -41,36 +41,17 @@
         };
 
         const scene = createScene();
+        const pieces = [];
 
         const createPiece = (name, position, color) => {
-            let piece;
-            switch (name) {
-                case "pawn":
-                    piece = BABYLON.MeshBuilder.CreateSphere(name, {diameter: 0.5}, scene);
-                    break;
-                case "rook":
-                    piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
-                    break;
-                case "knight":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 1}, scene);
-                    break;
-                case "bishop":
-                    piece = BABYLON.MeshBuilder.CreateTorus(name, {diameter: 0.5, thickness: 0.15}, scene);
-                    break;
-                case "queen":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.2}, scene);
-                    break;
-                case "king":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
-                    break;
-                default:
-                    piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
-            }
-
+            const piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1}, scene);
             piece.position = position;
             const pieceMaterial = new BABYLON.StandardMaterial(name + "Mat", scene);
             pieceMaterial.diffuseColor = color;
             piece.material = pieceMaterial;
+
+            piece.name = name; // Store the piece name for later reference
+            piece.color = color; // Store color for movement validation
 
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
@@ -80,50 +61,88 @@
             return piece;
         };
 
-        const pieces = [];
+        // Initializing pieces on the board
+        const initializePieces = () => {
+            const piecePositions = {
+                white: [
+                    { name: "rook", pos: new BABYLON.Vector3(-3.5, 0.5, 3.5) },
+                    { name: "knight", pos: new BABYLON.Vector3(-2.5, 0.5, 3.5) },
+                    { name: "bishop", pos: new BABYLON.Vector3(-1.5, 0.5, 3.5) },
+                    { name: "queen", pos: new BABYLON.Vector3(0.5, 0.5, 3.5) },
+                    { name: "king", pos: new BABYLON.Vector3(0.5, 0.5, 3.5) },
+                    { name: "bishop", pos: new BABYLON.Vector3(1.5, 0.5, 3.5) },
+                    { name: "knight", pos: new BABYLON.Vector3(2.5, 0.5, 3.5) },
+                    { name: "rook", pos: new BABYLON.Vector3(3.5, 0.5, 3.5) }
+                ],
+                black: [
+                    { name: "rook", pos: new BABYLON.Vector3(-3.5, 0.5, -3.5) },
+                    { name: "knight", pos: new BABYLON.Vector3(-2.5, 0.5, -3.5) },
+                    { name: "bishop", pos: new BABYLON.Vector3(-1.5, 0.5, -3.5) },
+                    { name: "queen", pos: new BABYLON.Vector3(-0.5, 0.5, -3.5) },
+                    { name: "king", pos: new BABYLON.Vector3(0.5, 0.5, -3.5) },
+                    { name: "bishop", pos: new BABYLON.Vector3(1.5, 0.5, -3.5) },
+                    { name: "knight", pos: new BABYLON.Vector3(2.5, 0.5, -3.5) },
+                    { name: "rook", pos: new BABYLON.Vector3(3.5, 0.5, -3.5) }
+                ]
+            };
 
-        // Place pawns
-        for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
-        }
+            // Place pawns
+            for (let i = 0; i < 8; i++) {
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
+            }
 
+            // Place other pieces
+            piecePositions.white.forEach(({ name, pos }) => pieces.push(createPiece(name, pos, new BABYLON.Color3(1, 1, 1))));
+            piecePositions.black.forEach(({ name, pos }) => pieces.push(createPiece(name, pos, new BABYLON.Color3(0, 0, 0))));
+        };
 
-        // Place rooks
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
-
-        // Place knights
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
-
-        // Place bishops
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
-
-        // Place queens
-        pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Queen
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Queen
-
-        // Place kings
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White King
-        pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black King
+        initializePieces();
 
         let selectedPiece = null;
+
+        // Function to validate moves
+        const isValidMove = (piece, targetTile) => {
+            const startX = piece.position.x;
+            const startZ = piece.position.z;
+            const targetX = targetTile.position.x;
+            const targetZ = targetTile.position.z;
+
+            const dx = targetX - startX;
+            const dz = targetZ - startZ;
+
+            // Determine the piece type
+            switch (piece.name) {
+                case "pawn":
+                    if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) { // White Pawn
+                        return dz === 1 && dx === 0; // Move forward 1
+                    } else { // Black Pawn
+                        return dz === -1 && dx === 0; // Move forward 1
+                    }
+                case "rook":
+                    return (dx === 0 || dz === 0); // Rook moves straight
+                case "knight":
+                    return (Math.abs(dx) === 2 && Math.abs(dz) === 1) || (Math.abs(dx) === 1 && Math.abs(dz) === 2); // Knight moves in L shape
+                case "bishop":
+                    return Math.abs(dx) === Math.abs(dz); // Bishop moves diagonally
+                case "queen":
+                    return (dx === 0 || dz === 0 || Math.abs(dx) === Math.abs(dz)); // Queen moves like both rook and bishop
+                case "king":
+                    return Math.abs(dx) <= 1 && Math.abs(dz) <= 1; // King moves one square in any direction
+                default:
+                    return false;
+            }
+        };
 
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    selectedPiece.position.x = pickedTile.position.x;
-                    selectedPiece.position.z = pickedTile.position.z;
-                    selectedPiece = null;
+                    if (isValidMove(selectedPiece, pickedTile)) {
+                        selectedPiece.position.x = pickedTile.position.x;
+                        selectedPiece.position.z = pickedTile.position.z;
+                    }
+                    selectedPiece = null; // Deselect piece after moving
                 }
             }
         };
@@ -150,6 +169,7 @@
     </script>
 </body>
 </html>
+
 
 
 
