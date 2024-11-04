@@ -253,7 +253,7 @@
             const minutes = Math.floor(timeRemaining / 60);
             const seconds = timeRemaining % 60;
             document.getElementById('timer-display').innerText = 
-                ${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds};
+                `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         };
 
         const startTimer = () => {
@@ -266,7 +266,7 @@
                 updateTimerDisplay();
                 if (timeRemaining <= 0) {
                     clearInterval(timer);
-                    alert(${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} has run out of time!);
+                    alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} has run out of time!`);
                 }
             }, 1000);
         };
@@ -293,18 +293,18 @@
                     gameState[row][col] = piece; // Move the piece
                     gameState[fromRow][fromCol] = ''; // Clear original square
 
-                    const moveNotation = ${piece.toUpperCase()} from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row};
+                    const moveNotation = `${piece.toUpperCase()} from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
                     moveHistory.push(moveNotation);
-                    document.getElementById('move-history').innerHTML += <li>${moveNotation}</li>;
+                    document.getElementById('move-history').innerHTML += `<li>${moveNotation}</li>`;
 
                     if (capturedPiece) {
-                        const capturedPieceNotation = Captured ${capturedPiece.toUpperCase()} at ${String.fromCharCode(97 + col)}${8 - row};
+                        const capturedPieceNotation = `Captured ${capturedPiece.toUpperCase()} at ${String.fromCharCode(97 + col)}${8 - row}`;
                         moveHistory.push(capturedPieceNotation);
-                        document.getElementById('move-history').innerHTML += <li>${capturedPieceNotation}</li>;
+                        document.getElementById('move-history').innerHTML += `<li>${capturedPieceNotation}</li>`;
                     }
 
                     currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-                    document.getElementById('turn-display').innerText = ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn;
+                    document.getElementById('turn-display').innerText = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
 
                     if (speechEnabled) {
                         const utterance = new SpeechSynthesisUtterance(moveNotation);
@@ -351,6 +351,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
