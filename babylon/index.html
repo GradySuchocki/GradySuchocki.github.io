@@ -5,10 +5,24 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
+    <style>
+        #turnIndicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
+    <div id="turnIndicator">Current Turn: White</div>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
-    <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
+    <button id="exportButton" style="position: absolute; top: 10px; left: 10px; margin-top: 40px;">Export STL</button>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -88,38 +102,43 @@
 
         // Place pawns
         for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), "white")); // White Pawns
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), "black")); // Black Pawns
+            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1))); // White Pawns
+            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0, 0, 0))); // Black Pawns
         }
 
         // Place rooks
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), "white")); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), "white")); // White Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), "black")); // Black Rook
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), "black")); // Black Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
+        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Rook
 
         // Place knights
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), "white")); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), "white")); // White Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), "black")); // Black Knight
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), "black")); // Black Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
+        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Knight
 
         // Place bishops
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), "white")); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), "white")); // White Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), "black")); // Black Bishop
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), "black")); // Black Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
+        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Bishop
 
         // Place queens
-        pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), "white")); // White Queen
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), "black")); // Black Queen
+        pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White Queen
+        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black Queen
 
         // Place kings
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), "white")); // White King
-        pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), "black")); // Black King
+        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White King
+        pieces.push(createPiece("king", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black King
 
         let selectedPiece = null;
         let currentTurn = "white"; // Start with white's turn
+        const turnIndicator = document.getElementById("turnIndicator");
+
+        const updateTurnIndicator = () => {
+            turnIndicator.textContent = `Current Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
+        };
 
         const isValidMove = (piece, targetTile) => {
             const dx = targetTile.position.x - piece.position.x;
@@ -173,6 +192,7 @@
                     selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
                     currentTurn = currentTurn === "white" ? "black" : "white"; // Switch turn
+                    updateTurnIndicator(); // Update turn display
                 }
             }
         };
@@ -196,15 +216,12 @@
         window.addEventListener("resize", () => {
             engine.resize();
         });
+
+        // Initialize turn indicator
+        updateTurnIndicator();
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
