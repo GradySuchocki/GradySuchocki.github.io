@@ -35,8 +35,8 @@ for (let row = 0; row < boardSize; row++) {
         
         const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
         
-        // Update colors here
-        tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(0.8, 0.5, 0.3) : new BABYLON.Color3(0.2, 0.4, 0.6);
+        // Set the colors to red and gray
+        tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(0.8, 0.1, 0.1) : new BABYLON.Color3(0.6, 0.6, 0.6);
         
         tile.material = tileMaterial;
     }
