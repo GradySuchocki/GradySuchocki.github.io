@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village</title>
+    <title>Babylon.js Village </title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -16,20 +16,25 @@
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
 
+
         const createScene = function () {
+            
             const scene = new BABYLON.Scene(engine);
 
             const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 1.5, Math.PI / 2.2, 15, new BABYLON.Vector3(0, 0, 0));
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
+            
 
+            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
+     
+            
             const walk = function (turn, dist) {
                 this.turn = turn;
                 this.dist = dist;
             }
-
+            
             const track = [];
             track.push(new walk(86, 7));
             track.push(new walk(-85, 14.8));
@@ -39,16 +44,17 @@
             track.push(new walk(-72, 33.2));
             track.push(new walk(42, 37.5));
             track.push(new walk(-98, 45.2));
-            track.push(new walk(0, 47));
+            track.push(new walk(0, 47))
 
             // Dude
             BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
                 var dude = result.meshes[0];
                 dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
+                    
                 dude.position = new BABYLON.Vector3(-6, 0, 0);
                 dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
                 const startRotation = dude.rotationQuaternion.clone();    
-
+                    
                 scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
 
                 let distance = 0;
@@ -58,10 +64,11 @@
                 scene.onBeforeRenderObservable.add(() => {
                     dude.movePOV(0, 0, step);
                     distance += step;
-
+                      
                     if (distance > track[p].dist) {
+                        
                         dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
+                        p +=1;
                         p %= track.length; 
                         if (p === 0) {
                             distance = 0;
@@ -69,120 +76,79 @@
                             dude.rotationQuaternion = startRotation.clone();
                         }
                     }
-                });
+                    
+                })
             });
 
-            // Create the spheres
-            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-                diameter: 0.5,
-                segments: 32,
-            }, scene);
+            // Create the sphere
+var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
+    diameter: 0.5, // diameter of the sphere
+    segments: 32, // number of segments
+}, scene);
 
-            sphere.position = new BABYLON.Vector3(0, 0, 6);
-            var material = new BABYLON.StandardMaterial("material", scene); 
-            material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
-            sphere.material = material;
+// Position the sphere
+sphere.position = new BABYLON.Vector3(0, 0, 6);
+var material = new BABYLON.StandardMaterial("material", scene); 
+material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color // Create red material
+sphere.material = material;// Assign material to sphere
 
-            // Create the fence
-            function createFence(scene) {
-                const fencePostHeight = 3;
-                const fencePostRadius = 0.1;
-                const fenceDistance = 6; // distance between fence posts
-                const fenceRadius = 25; // radius of the fence circle
-                const gateIndex = 4; // Index where the gate should be placed (position 4 in the circle)
+            // Define sphere properties
+var sphereProperties = {
+    diameter: 2,
+    segments: 32,
+};
 
-                const posts = [];
-                const panels = [];
+// Define materials
+var materials = [
+    new BABYLON.StandardMaterial("material1", scene),
+    new BABYLON.StandardMaterial("material2", scene),
+    new BABYLON.StandardMaterial("material3", scene)
+];
 
-                // Create 8 fence posts arranged in a circle and store their positions
-                for (let i = 0; i < 8; i++) {
-                    const angle = Math.PI / 4 * i; // angle for each post
-                    const x = fenceRadius * Math.cos(angle);
-                    const z = fenceRadius * Math.sin(angle);
+materials[0].diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
+materials[1].diffuseColor = new BABYLON.Color3(0, 1, 0); // Green
+materials[2].diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue
 
-                    const post = BABYLON.MeshBuilder.CreateCylinder("fencePost", {
-                        height: fencePostHeight,
-                        diameter: fencePostRadius,
-                    }, scene);
+// Define positions
+var positions = [
+    new BABYLON.Vector3(0, 0, 0),
+    new BABYLON.Vector3(0, 2, 0),
+    new BABYLON.Vector3(2, 0, 0)
+];
 
-                    post.position = new BABYLON.Vector3(x, fencePostHeight / 2, z); // Position each post
-                    post.rotation.y = angle; // Rotate each post to face outward
-                    posts.push(post);
+// Create spheres
+for (var i = 0; i < 3; i++) {
+    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere" + i, sphereProperties, scene);
+    sphere.position = positions[i];
+    sphere.material = materials[i];
+}
+            
+            
+            // Load the bunny OBJ model
+            BABYLON.SceneLoader.ImportMesh(
+                "",                        // No name filter; load all meshes
+                "./",     // Path to the folder where .obj and .mtl are located
+                "StanfordBunny.obj",           // Name of the OBJ file
+                scene,                     // The scene to import into
+                function (meshes) {        // Callback once loaded
+                    alert("How many meshes?", mesh.length)
+                    // Position the loaded model (optional)
+                    meshes.forEach(mesh => {
+                        mesh.position = new BABYLON.Vector3(0, 0, 0);
+                        meshes.scaling = new BABYLON.Vector3(2, 2, 2); // Scale by factor of 2
+                    });
+                },
+                null,                      // Progress function (optional)
+                function (scene, message, exception) { // Error callback
+                    console.error("Error loading OBJ file:", message, exception);
                 }
-
-                // Create fence panels connecting the posts, excluding the gate position
-                for (let i = 0; i < posts.length; i++) {
-                    if (i === gateIndex) continue; // Skip creating panels where the gate is
-
-                    const startPost = posts[i];
-                    const endPost = posts[(i + 1) % posts.length]; // Next post, wrapping around the end
-                    
-                    // If one of the posts is part of the gate, skip creating a panel
-                    if (i === gateIndex - 1 || (i === gateIndex + 1) % posts.length) continue;
-
-                    const startPos = startPost.position;
-                    const endPos = endPost.position;
-
-                    // Calculate the distance and direction between posts
-                    const direction = endPos.subtract(startPos);
-                    const distance = direction.length();
-
-                    // Create a fence panel between the posts
-                    const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
-                        width: distance,
-                        height: 2,
-                        depth: 0.1
-                    }, scene);
-
-                    // Position the panel at the center of the posts
-                    panel.position = startPos.add(direction.scale(0.5));
-
-                    // Rotate the panel to align with the direction of the posts
-                    const axis = BABYLON.Axis.Y;
-                    const angle = Math.atan2(direction.z, direction.x);
-                    panel.rotation = new BABYLON.Vector3(0, angle, 0);
-                    panels.push(panel);
-                }
-
-                // Create a simple gate at one position (using two wider posts and a bar)
-                const gateWidth = 4;
-                const gateHeight = 3;
-                const gatePosition = new BABYLON.Vector3(0, gateHeight / 2, fenceRadius);
-                
-                const gatePost1 = BABYLON.MeshBuilder.CreateCylinder("gatePost1", {
-                    height: gateHeight,
-                    diameter: 0.3
-                }, scene);
-                gatePost1.position = new BABYLON.Vector3(gatePosition.x - gateWidth / 2, gateHeight / 2, gatePosition.z);
-                
-                const gatePost2 = BABYLON.MeshBuilder.CreateCylinder("gatePost2", {
-                    height: gateHeight,
-                    diameter: 0.3
-                }, scene);
-                gatePost2.position = new BABYLON.Vector3(gatePosition.x + gateWidth / 2, gateHeight / 2, gatePosition.z);
-                
-                const gateBar = BABYLON.MeshBuilder.CreateBox("gateBar", {
-                    width: gateWidth,
-                    height: 0.1,
-                    depth: 0.3
-                }, scene);
-                gateBar.position = new BABYLON.Vector3(gatePosition.x, gateHeight - 0.1, gatePosition.z);
-            }
-
-            createFence(scene);
-
-            // Function to export as GLB
-            function exportToGLB() {
-                BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
-                    glb.downloadFiles();
-                });
-            }
-
-            // Attach export function to the download button
-            document.getElementById("downloadButton").addEventListener("click", exportToGLB);
-
+            );
+                   alert("village, dude and bunny should have been loaded with animation.");
+            
             return scene;
         };
+
+  
 
         var scene = createScene();
 
@@ -193,8 +159,17 @@
         window.addEventListener("resize", function () {
             engine.resize();
         });
+
+        // Function to export as GLB
+        function exportToGLB() {
+            BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
+                glb.downloadFiles();
+            });
+        }
+
+        // Attach export function to the download button
+        document.getElementById("downloadButton").addEventListener("click", exportToGLB);
     </script>
 </body>
 </html>
-
 
