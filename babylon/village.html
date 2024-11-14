@@ -90,7 +90,10 @@
                 const fenceDistance = 6; // distance between fence posts
                 const fenceRadius = 25; // radius of the fence circle
 
-                // Create 8 fence posts arranged in a circle
+                const posts = [];
+                const panels = [];
+                
+                // Create 8 fence posts arranged in a circle and store their positions
                 for (let i = 0; i < 8; i++) {
                     const angle = Math.PI / 4 * i; // angle for each post
                     const x = fenceRadius * Math.cos(angle);
@@ -103,6 +106,37 @@
 
                     post.position = new BABYLON.Vector3(x, fencePostHeight / 2, z); // Position each post
                     post.rotation.y = angle; // Rotate each post to face outward
+                    posts.push(post);
+                }
+
+                // Create fence panels connecting the posts
+                for (let i = 0; i < posts.length; i++) {
+                    const startPost = posts[i];
+                    const endPost = posts[(i + 1) % posts.length]; // Next post, wrapping around the end
+                    
+                    const startPos = startPost.position;
+                    const endPos = endPost.position;
+
+                    // Calculate the distance and direction between posts
+                    const direction = endPos.subtract(startPos);
+                    const distance = direction.length();
+
+                    // Create a fence panel between the posts
+                    const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
+                        width: distance,
+                        height: 2,
+                        depth: 0.1
+                    }, scene);
+
+                    // Position the panel at the center of the posts
+                    panel.position = startPos.add(direction.scale(0.5));
+
+                    // Rotate the panel to align with the direction of the posts
+                    const axis = BABYLON.Axis.Y;
+                    const angle = Math.atan2(direction.z, direction.x);
+                    panel.rotation = new BABYLON.Vector3(0, angle, 0);
+
+                    panels.push(panel);
                 }
 
                 // Create a simple gate at one position (using two wider posts and a bar)
