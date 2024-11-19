@@ -125,63 +125,66 @@
             return gameState[row][col] || null;
         };
 
-        function isValidMove(fromRow, fromCol, toRow, toCol, piece) {
-            if (fromRow === toRow && fromCol === toCol) return false;
+function isValidMove(fromRow, fromCol, toRow, toCol, piece) {
+    if (fromRow === toRow && fromCol === toCol) return false; // No move if it's the same square
 
-            const pieceType = piece.toLowerCase();
-            const color = piece === piece.toUpperCase() ? 'white' : 'black';
+    const pieceType = piece.toLowerCase(); // Normalize to lower case for comparison
+    const color = piece === piece.toUpperCase() ? 'white' : 'black'; // Determine the color of the piece
 
-            const destPiece = getPieceAt(toRow, toCol);
-            if (destPiece && (destPiece === destPiece.toUpperCase() ? 'white' : 'black') === color) {
-                return false; // Can't capture your own piece
+    const destPiece = getPieceAt(toRow, toCol); // The piece on the destination square
+    const destColor = destPiece ? (destPiece === destPiece.toUpperCase() ? 'white' : 'black') : null; // Get the color of the destination piece
+
+    if (destPiece && destColor === color) {
+        return false; // Can't capture your own piece
+    }
+
+    const rowDiff = toRow - fromRow;
+    const colDiff = toCol - fromCol;
+    const absRowDiff = Math.abs(rowDiff);
+    const absColDiff = Math.abs(colDiff);
+
+    switch (pieceType) {
+        case 'p': // Pawn movement
+            const direction = color === 'white' ? -1 : 1;
+            const startRow = color === 'white' ? 6 : 1;
+
+            if (colDiff === 0 && !destPiece) {
+                if (rowDiff === direction) return true; // Regular move
+                if (fromRow === startRow && rowDiff === 2 * direction && !getPieceAt(fromRow + direction, fromCol)) {
+                    return true; // Initial double move
+                }
             }
 
-            const rowDiff = toRow - fromRow;
-            const colDiff = toCol - fromCol;
-            const absRowDiff = Math.abs(rowDiff);
-            const absColDiff = Math.abs(colDiff);
-
-            switch (pieceType) {
-                case 'p':
-                    const direction = color === 'white' ? -1 : 1;
-                    const startRow = color === 'white' ? 6 : 1;
-
-                    if (colDiff === 0 && !destPiece) {
-                        if (rowDiff === direction) return true; // Regular move
-                        if (fromRow === startRow && rowDiff === 2 * direction && !getPieceAt(fromRow + direction, fromCol)) {
-                            return true; // Initial double move
-                        }
-                    }
-
-                    if (absColDiff === 1 && rowDiff === direction && destPiece) {
-                        return true; // Capture
-                    }
-                    return false;
-
-                case 'r':
-                    if (fromRow !== toRow && fromCol !== toCol) return false; // Rook moves in straight lines
-                    return !isPathBlocked(fromRow, fromCol, toRow, toCol);
-
-                case 'n':
-                    return (absRowDiff === 2 && absColDiff === 1) || (absRowDiff === 1 && absColDiff === 2); // Knight moves in L shape
-
-                case 'b':
-                    if (absRowDiff !== absColDiff) return false; // Bishop moves diagonally
-                    return !isPathBlocked(fromRow, fromCol, toRow, toCol);
-
-                case 'q':
-                    if (fromRow === toRow || fromCol === toCol || absRowDiff === absColDiff) {
-                        return !isPathBlocked(fromRow, fromCol, toRow, toCol);
-                    }
-                    return false;
-
-                case 'k':
-                    return absRowDiff <= 1 && absColDiff <= 1; // King moves one square in any direction
-
-                default:
-                    return false;
+            if (absColDiff === 1 && rowDiff === direction && destPiece) {
+                return true; // Capture
             }
-        }
+            return false;
+
+        case 'r': // Rook movement
+            if (fromRow !== toRow && fromCol !== toCol) return false; // Rook moves in straight lines
+            return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+
+        case 'n': // Knight movement
+            return (absRowDiff === 2 && absColDiff === 1) || (absRowDiff === 1 && absColDiff === 2); // Knight moves in L shape
+
+        case 'b': // Bishop movement
+            if (absRowDiff !== absColDiff) return false; // Bishop moves diagonally
+            return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+
+        case 'q': // Queen movement
+            if (fromRow === toRow || fromCol === toCol || absRowDiff === absColDiff) {
+                return !isPathBlocked(fromRow, fromCol, toRow, toCol);
+            }
+            return false;
+
+        case 'k': // King movement
+            return absRowDiff <= 1 && absColDiff <= 1; // King moves one square in any direction
+
+        default:
+            return false;
+    }
+}
+
 
         function isPathBlocked(fromRow, fromCol, toRow, toCol) {
             const rowDir = fromRow === toRow ? 0 : (toRow - fromRow) / Math.abs(toRow - fromRow);
