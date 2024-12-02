@@ -48,7 +48,7 @@
 
             // Set up the shadow generator for the sun
             const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);
-            
+
             // Optional: Create a sphere to represent the sun in the sky
             var sunSphere = BABYLON.MeshBuilder.CreateSphere("sunSphere", {diameter: 2}, scene);
             sunSphere.position = sun.position;
@@ -60,44 +60,78 @@
                 // Assuming "village.glb" includes a model of a village
             });
 
-            // Create a simple fence around the village using vertical posts and horizontal rails
-            function createFence(scene) {
-                const fenceHeight = 2;  // Height of the fence
-                const postWidth = 0.1;  // Width of the posts
-                const railHeight = 0.1;  // Height of the rails
+            // Create a square fence around the village using the provided function
+            function createSquareFence(scene) {
+                const fencePostHeight = 3;
+                const fencePostRadius = 0.1;
+                const fenceSize = 20; // Reduced size of the fence (smaller value, closer to the village)
 
-                const fenceLength = 50;  // Length of each side of the fence
-                const fenceSpacing = 5;  // Distance between posts
+                const positions = [
+                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
+                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
+                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, fenceSize / 2),
+                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, fenceSize / 2)
+                ];
 
-                // Create posts
-                for (let i = -fenceLength / 2; i < fenceLength / 2; i += fenceSpacing) {
-                    // Front posts
-                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(i, fenceHeight / 2, fenceLength / 2);
+                // Create 4 fence posts at the corners
+                const posts = positions.map((pos, index) => {
+                    const post = BABYLON.MeshBuilder.CreateCylinder("post" + index, {
+                        height: fencePostHeight,
+                        diameter: fencePostRadius
+                    }, scene);
+                    post.position = pos;
+                    return post;
+                });
 
-                    // Back posts
-                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(i, fenceHeight / 2, -fenceLength / 2);
+                // Create panels between posts
+                const panels = [];
+                for (let i = 0; i < positions.length; i++) {
+                    const startPos = positions[i];
+                    const endPos = positions[(i + 1) % positions.length]; // Wrap around for the last panel
+                    const direction = endPos.subtract(startPos);
+                    const distance = direction.length();
 
-                    // Left posts
-                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(fenceLength / 2, fenceHeight / 2, i);
+                    // Create a panel between posts
+                    const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
+                        width: distance,
+                        height: 2,
+                        depth: 0.1
+                    }, scene);
 
-                    // Right posts
-                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(-fenceLength / 2, fenceHeight / 2, i);
+                    // Position and rotate the panel to connect the posts
+                    panel.position = startPos.add(direction.scale(0.5));
+                    const angle = Math.atan2(direction.z, direction.x);
+                    panel.rotation = new BABYLON.Vector3(0, angle, 0);
+                    panels.push(panel);
                 }
 
-                // Create rails (horizontal pieces)
-                for (let i = -fenceLength / 2; i < fenceLength / 2; i += fenceSpacing) {
-                    // Front rails
-                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(i, fenceHeight, fenceLength / 2 + railHeight / 2);
-                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(i, fenceHeight, -fenceLength / 2 - railHeight / 2);
+                // Optionally, add a gate (we'll use one of the panels)
+                const gateWidth = 4;
+                const gateHeight = 3;
+                const gatePosition = new BABYLON.Vector3(0, gateHeight / 2, -fenceSize / 2); // Position gate at one corner
 
-                    // Back rails
-                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(fenceLength / 2 + railHeight / 2, fenceHeight, i);
-                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(-fenceLength / 2 - railHeight / 2, fenceHeight, i);
-                }
+                const gatePost1 = BABYLON.MeshBuilder.CreateCylinder("gatePost1", {
+                    height: gateHeight,
+                    diameter: 0.3
+                }, scene);
+                gatePost1.position = new BABYLON.Vector3(gatePosition.x - gateWidth / 2, gateHeight / 2, gatePosition.z);
+                
+                const gatePost2 = BABYLON.MeshBuilder.CreateCylinder("gatePost2", {
+                    height: gateHeight,
+                    diameter: 0.3
+                }, scene);
+                gatePost2.position = new BABYLON.Vector3(gatePosition.x + gateWidth / 2, gateHeight / 2, gatePosition.z);
+                
+                const gateBar = BABYLON.MeshBuilder.CreateBox("gateBar", {
+                    width: gateWidth,
+                    height: 0.1,
+                    depth: 0.3
+                }, scene);
+                gateBar.position = new BABYLON.Vector3(gatePosition.x, gateHeight - 0.1, gatePosition.z);
             }
 
-            // Call the function to create the fence
-            createFence(scene);
+            // Call the function to create the square fence
+            createSquareFence(scene);
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
@@ -180,5 +214,6 @@
     </script>
 </body>
 </html>
+
 
 
