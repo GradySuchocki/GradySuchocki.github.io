@@ -17,9 +17,9 @@
         <span id="speedValue" style="color: white;">0.25</span>
     </div>
     <div style="position: absolute; top: 120px; left: 20px; z-index: 10;">
-        <label for="rainIntensity" style="color: white;">Rain Intensity:</label>
-        <input type="range" id="rainIntensity" min="0.1" max="2" step="0.1" value="1" style="width: 200px;" />
-        <span id="rainIntensityValue" style="color: white;">1</span>
+        <label for="snowIntensity" style="color: white;">Snow Intensity:</label>
+        <input type="range" id="snowIntensity" min="0.1" max="2" step="0.1" value="1" style="width: 200px;" />
+        <span id="snowIntensityValue" style="color: white;">1</span>
     </div>
     
     <script>
@@ -210,52 +210,49 @@
                 updateCycleSpeed(e.target.value);
             });
 
-            // Function to export the scene as a GLB file
-            function exportToGLB() {
-                BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
-                    glb.downloadFiles();
-                });
+            // Snow particle system
+            var snowEmitter = new BABYLON.Mesh.CreateBox("snowEmitter", 1, scene);
+            snowEmitter.position = new BABYLON.Vector3(0, 50, 0);  // Position above the scene
+            snowEmitter.isVisible = false;  // We don't need to see the emitter itself
+
+            // Snow particle system
+            var snow = new BABYLON.ParticleSystem("snow", 1000, scene);
+            snow.particleTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/snowflake.png", scene);  // Use a snowflake texture
+            snow.emitter = snowEmitter;  // The particle system will emit from this mesh
+            snow.minEmitPower = 0.1;
+            snow.maxEmitPower = 0.5;
+            snow.minLifeTime = 2;
+            snow.maxLifeTime = 5;
+            snow.emitRate = 500;  // Default snow density
+            snow.start();
+
+            // Function to update snow intensity
+            function updateSnow() {
+                var snowIntensity = parseFloat(document.getElementById("snowIntensity").value);
+                
+                // Adjust the intensity (density of snowflakes)
+                snow.emitRate = snowIntensity * 500;  // Adjust the number of particles (intensity)
+                snow.minEmitPower = snowIntensity * 0.2; // Adjust snowflake fall speed
+                snow.maxEmitPower = snowIntensity * 0.5; // Adjust snowflake fall speed
+
+                // Update the displayed value on the slider
+                document.getElementById("snowIntensityValue").textContent = snowIntensity;
             }
 
-            // Create a rain particle system
-            var rainEmitter = new BABYLON.Mesh.CreateBox("rainEmitter", 1, scene);
-            rainEmitter.position = new BABYLON.Vector3(0, 50, 0); // Position above the scene
-            rainEmitter.isVisible = false; // We don't need to see the emitter itself
+            // Event listener for the snow intensity slider
+            document.getElementById("snowIntensity").addEventListener("input", updateSnow);
             
-            // Rain particle system
-            var rain = new BABYLON.ParticleSystem("rain", 1000, scene);
-            rain.particleTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/raindrop.png", scene);
-            rain.emitter = rainEmitter; // The particle system will emit from this mesh
-            rain.minEmitPower = 0.1;
-            rain.maxEmitPower = 1.0;
-            rain.minLifeTime = 1;
-            rain.maxLifeTime = 3;
-            rain.emitRate = 1000; // Default rain density
-            rain.start();
-            
-            // Function to update rain intensity
-            function updateRain() {
-                var rainIntensity = parseFloat(document.getElementById("rainIntensity").value);
-                
-                // Adjust the intensity (density of rain and drop speed)
-                rain.emitRate = rainIntensity * 1000; // Adjust the number of particles (intensity)
-                rain.minEmitPower = rainIntensity * 0.5; // Adjust fall speed
-                rain.maxEmitPower = rainIntensity; // Adjust fall speed
-            
-                // Update the displayed value on the slider
-                document.getElementById("rainIntensityValue").textContent = rainIntensity;
-            }
-            
-            // Event listener for the rain intensity slider
-            document.getElementById("rainIntensity").addEventListener("input", updateRain);
-            
-            // Call updateRain in the render loop to update in real-time
+            // Call updateSnow in the render loop to update in real-time
             scene.onBeforeRenderObservable.add(() => {
-                updateRain(); // Update rain intensity based on the slider
+                updateSnow(); // Update snow intensity based on the slider
             });
 
             // Attach export function to the download button
-            document.getElementById("downloadButton").addEventListener("click", exportToGLB);
+            document.getElementById("downloadButton").addEventListener("click", () => {
+                BABYLON.GLTF2Export.GLBAsync(scene, "village_with_snow.glb").then((glb) => {
+                    glb.downloadFiles();
+                });
+            });
 
             // Main render loop
             scene.onBeforeRenderObservable.add(() => {
@@ -277,6 +274,7 @@
     </script>
 </body>
 </html>
+
 
 
 
