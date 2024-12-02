@@ -133,6 +133,19 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
+            // Apply a grass texture to the ground
+            const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
+            const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+            groundMaterial.diffuseTexture = grassTexture;
+            
+            // Create the ground plane
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", {
+                width: 50,
+                height: 50,
+                subdivisions: 2
+            }, scene);
+            ground.material = groundMaterial;
+
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
             let sunPositionAngle = 0;  // Sun's position angle (0 = start position)
@@ -214,6 +227,7 @@
     </script>
 </body>
 </html>
+
 
 
 
