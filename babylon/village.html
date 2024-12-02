@@ -154,57 +154,75 @@
             // Apply the grass material to the ground plane
             ground.material = groundMaterial;
 
-            // Function to create random trees, different sizes, and spaced out
-            function createTrees(scene) {
-                const treeCount = 5; // Reduced number of trees
-                const treeRadius = 8; // Radius for tree placement
-                const minHeight = 0.5; // Min trunk height
-                const maxHeight = 2; // Max trunk height
-                const minCanopy = 1; // Min canopy diameter
-                const maxCanopy = 2; // Max canopy diameter
-                const treeSpacing = 2; // Minimum spacing between trees
-
-                // Function to check if the tree collides with existing objects
-                function checkTreeCollision(x, z) {
-                    const objects = scene.meshes.filter(m => m.name.startsWith("post") || m.name.startsWith("panel"));
-                    for (const obj of objects) {
-                        if (obj.position.subtract(new BABYLON.Vector3(x, obj.position.y, z)).length() < treeSpacing) {
+                   function createTrees(scene) {
+            const treeCount = 10; // Number of trees
+            const treeRadius = 8; // Radius for tree placement
+            const minHeight = 1; // Min trunk height
+            const maxHeight = 3; // Max trunk height
+            const minCanopy = 2; // Min canopy diameter
+            const maxCanopy = 4; // Max canopy diameter
+            const treeSpacing = 2; // Minimum spacing between trees
+        
+            // Function to check if the tree collides with existing objects (fence, buildings, or other trees)
+            function checkTreeCollision(x, z) {
+                const objects = scene.meshes.filter(m => m.name.startsWith("post") || m.name.startsWith("panel") || m.name.startsWith("village"));
+                
+                // Check against all objects (posts, panels, buildings)
+                for (const obj of objects) {
+                    if (obj.position.subtract(new BABYLON.Vector3(x, obj.position.y, z)).length() < treeSpacing) {
+                        return true; // Collision detected
+                    }
+                }
+        
+                // Check against other trees
+                for (let i = 0; i < scene.meshes.length; i++) {
+                    const other = scene.meshes[i];
+                    if (other.name.startsWith("tree") && other.position) {
+                        if (other.position.subtract(new BABYLON.Vector3(x, other.position.y, z)).length() < treeSpacing) {
                             return true; // Collision detected
                         }
                     }
-                    return false;
                 }
-
-                // Create trees with random size and spaced out
-                for (let i = 0; i < treeCount; i++) {
-                    let x, z;
-                    do {
-                        x = Math.random() * treeRadius * 2 - treeRadius;
-                        z = Math.random() * treeRadius * 2 - treeRadius;
-                    } while (checkTreeCollision(x, z)); // Keep trying until there's no collision
-
-                    const treeHeight = Math.random() * (maxHeight - minHeight) + minHeight; // Random height
-                    const canopySize = Math.random() * (maxCanopy - minCanopy) + minCanopy; // Random canopy size
-
-                    // Create tree trunk
-                    const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk" + i, {
-                        height: treeHeight,
-                        diameter: 0.2
-                    }, scene);
-                    trunk.position = new BABYLON.Vector3(x, treeHeight / 2, z);
-
-                    // Create tree canopy (sphere)
-                    const canopy = BABYLON.MeshBuilder.CreateSphere("canopy" + i, {
-                        diameter: canopySize
-                    }, scene);
-                    canopy.position = new BABYLON.Vector3(x, treeHeight + canopySize / 2, z);
-                    
-                    // Set a green material for the canopy
-                    const treeMaterial = new BABYLON.StandardMaterial("treeMaterial", scene);
-                    treeMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);  // Green color for the leaves
-                    canopy.material = treeMaterial;
-                }
+        
+                return false;
             }
+        
+            // Create trees with random size and spaced out
+            for (let i = 0; i < treeCount; i++) {
+                let x, z;
+                do {
+                    x = Math.random() * treeRadius * 2 - treeRadius;
+                    z = Math.random() * treeRadius * 2 - treeRadius;
+                } while (checkTreeCollision(x, z)); // Keep trying until there's no collision
+        
+                const treeHeight = Math.random() * (maxHeight - minHeight) + minHeight; // Random height
+                const canopySize = Math.random() * (maxCanopy - minCanopy) + minCanopy; // Random canopy size
+        
+                // Create tree trunk
+                const trunk = BABYLON.MeshBuilder.CreateCylinder("treeTrunk" + i, {
+                    height: treeHeight,
+                    diameter: 0.2
+                }, scene);
+                trunk.position = new BABYLON.Vector3(x, treeHeight / 2, z);
+        
+                // Create tree canopy (sphere)
+                const canopy = BABYLON.MeshBuilder.CreateSphere("treeCanopy" + i, {
+                    diameter: canopySize
+                }, scene);
+                canopy.position = new BABYLON.Vector3(x, treeHeight + canopySize / 2, z);
+                
+                // Set a green material for the canopy
+                const treeMaterial = new BABYLON.StandardMaterial("treeMaterial", scene);
+                treeMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);  // Green color for the leaves
+                canopy.material = treeMaterial;
+        
+                // Group the trunk and canopy together
+                const treeGroup = new BABYLON.TransformNode("tree" + i, scene);
+                trunk.parent = treeGroup;
+                canopy.parent = treeGroup;
+            }
+        }
+
 
             // Call the function to create trees
             createTrees(scene);
