@@ -57,13 +57,47 @@
 
             // Load the village model
             BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then(function(result) {
-                // Assuming "village.glb" includes a model of a fence
+                // Assuming "village.glb" includes a model of a village
             });
 
-            // Create a simple fence
-            const fence = BABYLON.MeshBuilder.CreateBox("fence", {height: 2, width: 1, depth: 10}, scene);
-            fence.position.y = 1;  // Elevate the fence
-            fence.position.z = -5;  // Place it along the negative Z axis
+            // Create a simple fence around the village using vertical posts and horizontal rails
+            function createFence(scene) {
+                const fenceHeight = 2;  // Height of the fence
+                const postWidth = 0.1;  // Width of the posts
+                const railHeight = 0.1;  // Height of the rails
+
+                const fenceLength = 50;  // Length of each side of the fence
+                const fenceSpacing = 5;  // Distance between posts
+
+                // Create posts
+                for (let i = -fenceLength / 2; i < fenceLength / 2; i += fenceSpacing) {
+                    // Front posts
+                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(i, fenceHeight / 2, fenceLength / 2);
+
+                    // Back posts
+                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(i, fenceHeight / 2, -fenceLength / 2);
+
+                    // Left posts
+                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(fenceLength / 2, fenceHeight / 2, i);
+
+                    // Right posts
+                    BABYLON.MeshBuilder.CreateBox("post", {height: fenceHeight, width: postWidth, depth: postWidth}, scene).position = new BABYLON.Vector3(-fenceLength / 2, fenceHeight / 2, i);
+                }
+
+                // Create rails (horizontal pieces)
+                for (let i = -fenceLength / 2; i < fenceLength / 2; i += fenceSpacing) {
+                    // Front rails
+                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(i, fenceHeight, fenceLength / 2 + railHeight / 2);
+                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(i, fenceHeight, -fenceLength / 2 - railHeight / 2);
+
+                    // Back rails
+                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(fenceLength / 2 + railHeight / 2, fenceHeight, i);
+                    BABYLON.MeshBuilder.CreateCylinder("rail", {height: fenceLength, diameter: railHeight}, scene).position = new BABYLON.Vector3(-fenceLength / 2 - railHeight / 2, fenceHeight, i);
+                }
+            }
+
+            // Call the function to create the fence
+            createFence(scene);
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
