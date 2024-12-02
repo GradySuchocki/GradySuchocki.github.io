@@ -19,16 +19,33 @@
         const createScene = function () {
             const scene = new BABYLON.Scene(engine);
 
+            // Camera
             const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 1.5, Math.PI / 2.2, 15, new BABYLON.Vector3(0, 0, 0));
             camera.attachControl(canvas, true);
+
+            // Light - Hemispheric Light (general ambient light)
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
+            // Add the Sun (Directional Light)
+            const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-1, -1, -1), scene);
+            sun.position = new BABYLON.Vector3(10, 20, 10);  // Position it above and to the side
+            sun.intensity = 1.0;  // Adjust the intensity of sunlight (default is 1.0)
+            sun.specular = new BABYLON.Color3(1, 1, 1);  // Set the specular light color to white
+            sun.diffuse = new BABYLON.Color3(1, 1, 1);  // Set the diffuse light color to white
+
+            // Optional: Create a sphere to represent the sun in the sky
+            var sunSphere = BABYLON.MeshBuilder.CreateSphere("sunSphere", {diameter: 2}, scene);
+            sunSphere.position = sun.position;
+            sunSphere.material = new BABYLON.StandardMaterial("sunMaterial", scene);
+            sunSphere.material.emissiveColor = new BABYLON.Color3(1, 1, 0);  // Yellow emissive color (to make it look like a sun)
+            
+            // Load the village model
             BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
-     
+
             const walk = function (turn, dist) {
                 this.turn = turn;
                 this.dist = dist;
-            }
+            };
 
             const track = [];
             track.push(new walk(86, 7));
@@ -83,76 +100,75 @@
             material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color // Create red material
             sphere.material = material; // Assign material to sphere
 
-           // Create the fence (square fence around the village)
-function createSquareFence(scene) {
-    const fencePostHeight = 3;
-    const fencePostRadius = 0.1;
-    const fenceSize = 20; // Reduced size of the fence (smaller value, closer to the village)
+            // Create the fence (square fence around the village)
+            function createSquareFence(scene) {
+                const fencePostHeight = 3;
+                const fencePostRadius = 0.1;
+                const fenceSize = 20; // Smaller fence size
 
-    const positions = [
-        new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
-        new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
-        new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, fenceSize / 2),
-        new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, fenceSize / 2)
-    ];
+                const positions = [
+                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
+                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
+                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, fenceSize / 2),
+                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, fenceSize / 2)
+                ];
 
-    // Create 4 fence posts at the corners
-    const posts = positions.map((pos, index) => {
-        const post = BABYLON.MeshBuilder.CreateCylinder("post" + index, {
-            height: fencePostHeight,
-            diameter: fencePostRadius
-        }, scene);
-        post.position = pos;
-        return post;
-    });
+                // Create 4 fence posts at the corners
+                const posts = positions.map((pos, index) => {
+                    const post = BABYLON.MeshBuilder.CreateCylinder("post" + index, {
+                        height: fencePostHeight,
+                        diameter: fencePostRadius
+                    }, scene);
+                    post.position = pos;
+                    return post;
+                });
 
-    // Create panels between posts
-    const panels = [];
-    for (let i = 0; i < positions.length; i++) {
-        const startPos = positions[i];
-        const endPos = positions[(i + 1) % positions.length]; // Wrap around for the last panel
-        const direction = endPos.subtract(startPos);
-        const distance = direction.length();
+                // Create panels between posts
+                const panels = [];
+                for (let i = 0; i < positions.length; i++) {
+                    const startPos = positions[i];
+                    const endPos = positions[(i + 1) % positions.length]; // Wrap around for the last panel
+                    const direction = endPos.subtract(startPos);
+                    const distance = direction.length();
 
-        // Create a panel between posts
-        const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
-            width: distance,
-            height: 2,
-            depth: 0.1
-        }, scene);
+                    // Create a panel between posts
+                    const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
+                        width: distance,
+                        height: 2,
+                        depth: 0.1
+                    }, scene);
 
-        // Position and rotate the panel to connect the posts
-        panel.position = startPos.add(direction.scale(0.5));
-        const angle = Math.atan2(direction.z, direction.x);
-        panel.rotation = new BABYLON.Vector3(0, angle, 0);
-        panels.push(panel);
-    }
+                    // Position and rotate the panel to connect the posts
+                    panel.position = startPos.add(direction.scale(0.5));
+                    const angle = Math.atan2(direction.z, direction.x);
+                    panel.rotation = new BABYLON.Vector3(0, angle, 0);
+                    panels.push(panel);
+                }
 
-    // Optionally, add a gate (we'll use one of the panels)
-    const gateWidth = 4;
-    const gateHeight = 3;
-    const gatePosition = new BABYLON.Vector3(0, gateHeight / 2, -fenceSize / 2); // Position gate at one corner
+                // Optional: Add a gate (we'll use one of the panels)
+                const gateWidth = 4;
+                const gateHeight = 3;
+                const gatePosition = new BABYLON.Vector3(0, gateHeight / 2, -fenceSize / 2); // Position gate at one corner
 
-    const gatePost1 = BABYLON.MeshBuilder.CreateCylinder("gatePost1", {
-        height: gateHeight,
-        diameter: 0.3
-    }, scene);
-    gatePost1.position = new BABYLON.Vector3(gatePosition.x - gateWidth / 2, gateHeight / 2, gatePosition.z);
-    
-    const gatePost2 = BABYLON.MeshBuilder.CreateCylinder("gatePost2", {
-        height: gateHeight,
-        diameter: 0.3
-    }, scene);
-    gatePost2.position = new BABYLON.Vector3(gatePosition.x + gateWidth / 2, gateHeight / 2, gatePosition.z);
-    
-    const gateBar = BABYLON.MeshBuilder.CreateBox("gateBar", {
-        width: gateWidth,
-        height: 0.1,
-        depth: 0.3
-    }, scene);
-    gateBar.position = new BABYLON.Vector3(gatePosition.x, gateHeight - 0.1, gatePosition.z);
-}
-
+                const gatePost1 = BABYLON.MeshBuilder.CreateCylinder("gatePost1", {
+                    height: gateHeight,
+                    diameter: 0.3
+                }, scene);
+                gatePost1.position = new BABYLON.Vector3(gatePosition.x - gateWidth / 2, gateHeight / 2, gatePosition.z);
+                
+                const gatePost2 = BABYLON.MeshBuilder.CreateCylinder("gatePost2", {
+                    height: gateHeight,
+                    diameter: 0.3
+                }, scene);
+                gatePost2.position = new BABYLON.Vector3(gatePosition.x + gateWidth / 2, gateHeight / 2, gatePosition.z);
+                
+                const gateBar = BABYLON.MeshBuilder.CreateBox("gateBar", {
+                    width: gateWidth,
+                    height: 0.1,
+                    depth: 0.3
+                }, scene);
+                gateBar.position = new BABYLON.Vector3(gatePosition.x, gateHeight - 0.1, gatePosition.z);
+            }
 
             createSquareFence(scene);
 
@@ -181,5 +197,6 @@ function createSquareFence(scene) {
     </script>
 </body>
 </html>
+
 
 
