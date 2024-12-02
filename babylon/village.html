@@ -13,8 +13,8 @@
     <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
     <div style="position: absolute; top: 60px; left: 20px; z-index: 10;">
         <label for="dayNightSpeed" style="color: white;">Day-Night Speed:</label>
-        <input type="range" id="dayNightSpeed" min="0.01" max="0.5" step="0.01" value="0.05" style="width: 200px;" />
-        <span id="speedValue" style="color: white;">0.05</span>
+        <input type="range" id="dayNightSpeed" min="0.1" max="1" step="0.01" value="0.25" style="width: 200px;" />
+        <span id="speedValue" style="color: white;">0.25</span>
     </div>
     
     <script>
@@ -56,21 +56,38 @@
             sunSphere.material.emissiveColor = new BABYLON.Color3(1, 1, 0);  // Yellow emissive color (to make it look like a sun)
 
             // Load the village model
-            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
+            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then(function(result) {
+                // Assuming "village.glb" includes a model of a fence
+            });
+
+            // Create a simple fence
+            const fence = BABYLON.MeshBuilder.CreateBox("fence", {height: 2, width: 1, depth: 10}, scene);
+            fence.position.y = 1;  // Elevate the fence
+            fence.position.z = -5;  // Place it along the negative Z axis
 
             // Function to control the sun-moon cycle
-            let cycleSpeed = 0.05;  // Default speed for the day-night cycle
+            let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
             let sunPositionAngle = 0;  // Sun's position angle (0 = start position)
             let moonPositionAngle = Math.PI; // Moon's starting position is opposite the sun
+            let maxCycleTime = 20;  // Maximum time for a full day-night cycle in seconds
+            let minCycleTime = 2;   // Minimum time for a full day-night cycle in seconds
+
+            // Function to calculate the cycle speed based on the slider value
+            function calculateCycleSpeed() {
+                let cycleDuration = minCycleTime + (maxCycleTime - minCycleTime) * (1 - cycleSpeed);
+                return (2 * Math.PI) / (cycleDuration * 60);  // Speed in radians per frame
+            }
 
             // Update sun and moon position based on the speed
             function updateDayNightCycle() {
+                let speed = calculateCycleSpeed();
+
                 // Sun movement (from east to west)
-                sunPositionAngle += cycleSpeed;
+                sunPositionAngle += speed;
                 if (sunPositionAngle > 2 * Math.PI) sunPositionAngle -= 2 * Math.PI;
                 
                 // Moon movement (opposite to the sun)
-                moonPositionAngle += cycleSpeed;
+                moonPositionAngle += speed;
                 if (moonPositionAngle > 2 * Math.PI) moonPositionAngle -= 2 * Math.PI;
 
                 // Update the sun and moon positions in the sky
@@ -129,7 +146,5 @@
     </script>
 </body>
 </html>
-
-
 
 
