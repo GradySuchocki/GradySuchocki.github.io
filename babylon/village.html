@@ -133,42 +133,6 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
-            // Add trees inside the village
-            function createTrees(scene) {
-                const treeCount = 10;  // Number of trees to add
-                const treeRadius = 5;  // The area where trees can be placed (within this radius from the center)
-                const treeHeight = 3;  // Height of the tree trunk
-                const canopySize = 2;  // Size of the tree canopy
-
-                for (let i = 0; i < treeCount; i++) {
-                    const angle = Math.random() * Math.PI * 2;  // Random angle
-                    const distance = Math.random() * treeRadius;  // Random distance from center
-                    const x = Math.cos(angle) * distance;
-                    const z = Math.sin(angle) * distance;
-
-                    // Create tree trunk (cylinder)
-                    const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk" + i, {
-                        height: treeHeight,
-                        diameter: 0.2
-                    }, scene);
-                    trunk.position = new BABYLON.Vector3(x, treeHeight / 2, z);
-
-                    // Create tree canopy (sphere)
-                    const canopy = BABYLON.MeshBuilder.CreateSphere("canopy" + i, {
-                        diameter: canopySize
-                    }, scene);
-                    canopy.position = new BABYLON.Vector3(x, treeHeight + canopySize / 2, z);
-                    
-                    // Set a green material for the canopy
-                    const treeMaterial = new BABYLON.StandardMaterial("treeMaterial", scene);
-                    treeMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);  // Green color for the leaves
-                    canopy.material = treeMaterial;
-                }
-            }
-
-            // Call the function to create trees inside the village
-            createTrees(scene);
-
             // Apply a grass texture to the ground
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
@@ -189,6 +153,61 @@
             
             // Apply the grass material to the ground plane
             ground.material = groundMaterial;
+
+            // Function to create random trees, different sizes, and spaced out
+            function createTrees(scene) {
+                const treeCount = 10; // Number of trees
+                const treeRadius = 8; // Radius for tree placement
+                const minHeight = 1; // Min trunk height
+                const maxHeight = 3; // Max trunk height
+                const minCanopy = 2; // Min canopy diameter
+                const maxCanopy = 4; // Max canopy diameter
+                const treeSpacing = 2; // Minimum spacing between trees
+
+                // Function to check if the tree collides with existing objects
+                function checkTreeCollision(x, z) {
+                    const objects = scene.meshes.filter(m => m.name.startsWith("post") || m.name.startsWith("panel"));
+                    for (const obj of objects) {
+                        if (obj.position.subtract(new BABYLON.Vector3(x, obj.position.y, z)).length() < treeSpacing) {
+                            return true; // Collision detected
+                        }
+                    }
+                    return false;
+                }
+
+                // Create trees with random size and spaced out
+                for (let i = 0; i < treeCount; i++) {
+                    let x, z;
+                    do {
+                        x = Math.random() * treeRadius * 2 - treeRadius;
+                        z = Math.random() * treeRadius * 2 - treeRadius;
+                    } while (checkTreeCollision(x, z)); // Keep trying until there's no collision
+
+                    const treeHeight = Math.random() * (maxHeight - minHeight) + minHeight; // Random height
+                    const canopySize = Math.random() * (maxCanopy - minCanopy) + minCanopy; // Random canopy size
+
+                    // Create tree trunk
+                    const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk" + i, {
+                        height: treeHeight,
+                        diameter: 0.2
+                    }, scene);
+                    trunk.position = new BABYLON.Vector3(x, treeHeight / 2, z);
+
+                    // Create tree canopy (sphere)
+                    const canopy = BABYLON.MeshBuilder.CreateSphere("canopy" + i, {
+                        diameter: canopySize
+                    }, scene);
+                    canopy.position = new BABYLON.Vector3(x, treeHeight + canopySize / 2, z);
+                    
+                    // Set a green material for the canopy
+                    const treeMaterial = new BABYLON.StandardMaterial("treeMaterial", scene);
+                    treeMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);  // Green color for the leaves
+                    canopy.material = treeMaterial;
+                }
+            }
+
+            // Call the function to create trees
+            createTrees(scene);
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
@@ -268,9 +287,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 
