@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width: 100%, initial-scale: 1.0">
     <title>Babylon.js Village with Dynamic Shadows and Day-Night Cycle</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
@@ -10,18 +10,13 @@
 </head>
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
-    <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
+    <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Village GLB</button>
     <div style="position: absolute; top: 60px; left: 20px; z-index: 10;">
         <label for="dayNightSpeed" style="color: white;">Day-Night Speed:</label>
         <input type="range" id="dayNightSpeed" min="0.1" max="1" step="0.01" value="0.25" style="width: 200px;" />
         <span id="speedValue" style="color: white;">0.25</span>
     </div>
-    <div style="position: absolute; top: 120px; left: 20px; z-index: 10;">
-        <label for="snowIntensity" style="color: white;">Snow Intensity:</label>
-        <input type="range" id="snowIntensity" min="0.1" max="2" step="0.1" value="1" style="width: 200px;" />
-        <span id="snowIntensityValue" style="color: white;">1</span>
-    </div>
-    
+
     <script>
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
@@ -210,46 +205,9 @@
                 updateCycleSpeed(e.target.value);
             });
 
-            // Snow particle system
-            var snowEmitter = new BABYLON.Mesh.CreateBox("snowEmitter", 1, scene);
-            snowEmitter.position = new BABYLON.Vector3(0, 50, 0);  // Position above the scene
-            snowEmitter.isVisible = false;  // We don't need to see the emitter itself
-
-            // Snow particle system
-            var snow = new BABYLON.ParticleSystem("snow", 1000, scene);
-            snow.particleTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/snowflake.png", scene);  // Use a snowflake texture
-            snow.emitter = snowEmitter;  // The particle system will emit from this mesh
-            snow.minEmitPower = 0.1;
-            snow.maxEmitPower = 0.5;
-            snow.minLifeTime = 2;
-            snow.maxLifeTime = 5;
-            snow.emitRate = 500;  // Default snow density
-            snow.start();
-
-            // Function to update snow intensity
-            function updateSnow() {
-                var snowIntensity = parseFloat(document.getElementById("snowIntensity").value);
-                
-                // Adjust the intensity (density of snowflakes)
-                snow.emitRate = snowIntensity * 500;  // Adjust the number of particles (intensity)
-                snow.minEmitPower = snowIntensity * 0.2; // Adjust snowflake fall speed
-                snow.maxEmitPower = snowIntensity * 0.5; // Adjust snowflake fall speed
-
-                // Update the displayed value on the slider
-                document.getElementById("snowIntensityValue").textContent = snowIntensity;
-            }
-
-            // Event listener for the snow intensity slider
-            document.getElementById("snowIntensity").addEventListener("input", updateSnow);
-            
-            // Call updateSnow in the render loop to update in real-time
-            scene.onBeforeRenderObservable.add(() => {
-                updateSnow(); // Update snow intensity based on the slider
-            });
-
             // Attach export function to the download button
             document.getElementById("downloadButton").addEventListener("click", () => {
-                BABYLON.GLTF2Export.GLBAsync(scene, "village_with_snow.glb").then((glb) => {
+                BABYLON.GLTF2Export.GLBAsync(scene, "village_with_daynight_cycle.glb").then((glb) => {
                     glb.downloadFiles();
                 });
             });
@@ -274,6 +232,7 @@
     </script>
 </body>
 </html>
+
 
 
 
