@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village </title>
+    <title>Babylon.js Village with Dynamic Shadows</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -33,12 +33,15 @@
             sun.specular = new BABYLON.Color3(1, 1, 1);  // Set the specular light color to white
             sun.diffuse = new BABYLON.Color3(1, 1, 1);  // Set the diffuse light color to white
 
+            // Set up the shadow generator
+            const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);  // 1024 is the shadow map resolution
+
             // Optional: Create a sphere to represent the sun in the sky
             var sunSphere = BABYLON.MeshBuilder.CreateSphere("sunSphere", {diameter: 2}, scene);
             sunSphere.position = sun.position;
             sunSphere.material = new BABYLON.StandardMaterial("sunMaterial", scene);
             sunSphere.material.emissiveColor = new BABYLON.Color3(1, 1, 0);  // Yellow emissive color (to make it look like a sun)
-            
+
             // Load the village model
             BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
 
@@ -87,6 +90,10 @@
                         }
                     }
                 });
+
+                // Enable shadows for the dude (cast shadows)
+                dude.receiveShadows = true;
+                shadowGenerator.addShadowCaster(dude);
             });
 
             // Create the sphere
@@ -99,6 +106,10 @@
             var material = new BABYLON.StandardMaterial("material", scene); 
             material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color // Create red material
             sphere.material = material; // Assign material to sphere
+
+            // Enable shadows for the sphere (receive shadows)
+            sphere.receiveShadows = true;
+            shadowGenerator.addShadowCaster(sphere);
 
             // Create the fence (square fence around the village)
             function createSquareFence(scene) {
@@ -120,6 +131,11 @@
                         diameter: fencePostRadius
                     }, scene);
                     post.position = pos;
+
+                    // Enable shadow casting for posts
+                    post.receiveShadows = true;
+                    shadowGenerator.addShadowCaster(post);
+
                     return post;
                 });
 
