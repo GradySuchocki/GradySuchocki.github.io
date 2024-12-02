@@ -133,7 +133,7 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
-            // Apply a grass texture to the ground
+                        // Apply a grass texture to the ground
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
             groundMaterial.diffuseTexture = grassTexture;
@@ -142,14 +142,18 @@
             const ground = BABYLON.MeshBuilder.CreatePlane("ground", {
                 width: 20,  // Same size as the fence (20 units)
                 height: 20, // Same size as the fence (20 units)
-                sideOrientation: BABYLON.Mesh.DOUBLESIDE  // Make sure the plane is double-sided so we can see it from both sides
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE  // Ensure it's double-sided
             }, scene);
+            
+            // Rotate the plane to lie flat on the X-Y plane
+            ground.rotation.x = Math.PI / 2;  // Rotate the plane 90 degrees so it lies flat
             
             // Position the ground plane slightly below the village
             ground.position.y = -0.1;  // Slightly below the other objects to avoid overlap
             
             // Apply the grass material to the ground plane
             ground.material = groundMaterial;
+
             
 
             // Function to control the sun-moon cycle
