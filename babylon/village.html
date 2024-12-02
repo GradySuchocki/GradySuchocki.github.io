@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village with Dynamic Shadows and Snow</title>
+    <title>Babylon.js Village with Dynamic Shadows and Day-Night Cycle</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -12,9 +12,9 @@
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
     <div style="position: absolute; top: 60px; left: 20px; z-index: 10;">
-        <label for="snowAmount" style="color: white;">Snow Amount:</label>
-        <input type="range" id="snowAmount" min="100" max="5000" step="100" value="1000" style="width: 200px;" />
-        <span id="snowValue" style="color: white;">1000</span>
+        <label for="dayNightSpeed" style="color: white;">Day-Night Speed:</label>
+        <input type="range" id="dayNightSpeed" min="0.01" max="0.5" step="0.01" value="0.05" style="width: 200px;" />
+        <span id="speedValue" style="color: white;">0.05</span>
     </div>
     
     <script>
@@ -29,18 +29,26 @@
             camera.attachControl(canvas, true);
 
             // Light - Hemispheric Light (general ambient light)
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-            // Add the Sun (Directional Light)
+            // Create Sun Light (Directional Light)
             const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-1, -1, -1), scene);
-            sun.position = new BABYLON.Vector3(10, 20, 10);  // Position it above and to the side
-            sun.intensity = 1.0;  // Adjust the intensity of sunlight (default is 1.0)
-            sun.specular = new BABYLON.Color3(1, 1, 1);  // Set the specular light color to white
-            sun.diffuse = new BABYLON.Color3(1, 1, 1);  // Set the diffuse light color to white
+            sun.position = new BABYLON.Vector3(10, 20, 10);  // Initial position of the sun
+            sun.intensity = 1.0;  // Sunlight intensity
+            sun.specular = new BABYLON.Color3(1, 1, 1);  // White specular light for sun
+            sun.diffuse = new BABYLON.Color3(1, 1, 0);  // Yellowish diffuse color for the sun
 
-            // Set up the shadow generator
-            const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);  // 1024 is the shadow map resolution
+            // Create Moon Light (Directional Light)
+            const moon = new BABYLON.DirectionalLight("moon", new BABYLON.Vector3(1, 1, 1), scene);
+            moon.position = new BABYLON.Vector3(10, -20, 10); // Initial position of the moon
+            moon.intensity = 0.2;  // Moonlight intensity
+            moon.specular = new BABYLON.Color3(1, 1, 1);  // White specular light for moon
+            moon.diffuse = new BABYLON.Color3(0.5, 0.5, 1);  // Bluish diffuse color for moon
+            moon.setEnabled(false); // Initially moonlight is off
 
+            // Set up the shadow generator for the sun
+            const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);
+            
             // Optional: Create a sphere to represent the sun in the sky
             var sunSphere = BABYLON.MeshBuilder.CreateSphere("sunSphere", {diameter: 2}, scene);
             sunSphere.position = sun.position;
@@ -50,174 +58,48 @@
             // Load the village model
             BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
 
-            const walk = function (turn, dist) {
-                this.turn = turn;
-                this.dist = dist;
-            };
+            // Function to control the sun-moon cycle
+            let cycleSpeed = 0.05;  // Default speed for the day-night cycle
+            let sunPositionAngle = 0;  // Sun's position angle (0 = start position)
+            let moonPositionAngle = Math.PI; // Moon's starting position is opposite the sun
 
-            const track = [];
-            track.push(new walk(86, 7));
-            track.push(new walk(-85, 14.8));
-            track.push(new walk(-93, 16.5));
-            track.push(new walk(48, 25.5));
-            track.push(new walk(-112, 30.5));
-            track.push(new walk(-72, 33.2));
-            track.push(new walk(42, 37.5));
-            track.push(new walk(-98, 45.2));
-            track.push(new walk(0, 47));
+            // Update sun and moon position based on the speed
+            function updateDayNightCycle() {
+                // Sun movement (from east to west)
+                sunPositionAngle += cycleSpeed;
+                if (sunPositionAngle > 2 * Math.PI) sunPositionAngle -= 2 * Math.PI;
+                
+                // Moon movement (opposite to the sun)
+                moonPositionAngle += cycleSpeed;
+                if (moonPositionAngle > 2 * Math.PI) moonPositionAngle -= 2 * Math.PI;
 
-            // Dude
-            BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
-                var dude = result.meshes[0];
-                dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
-                dude.position = new BABYLON.Vector3(-6, 0, 0);
-                dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
-                const startRotation = dude.rotationQuaternion.clone();    
-                    
-                scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
+                // Update the sun and moon positions in the sky
+                sun.position = new BABYLON.Vector3(20 * Math.cos(sunPositionAngle), 20, 20 * Math.sin(sunPositionAngle));
+                moon.position = new BABYLON.Vector3(20 * Math.cos(moonPositionAngle), -20, 20 * Math.sin(moonPositionAngle));
 
-                let distance = 0;
-                let step = 0.015;
-                let p = 0;
-
-                scene.onBeforeRenderObservable.add(() => {
-                    dude.movePOV(0, 0, step);
-                    distance += step;
-                    
-                    if (distance > track[p].dist) {
-                        dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
-                        p %= track.length; 
-                        if (p === 0) {
-                            distance = 0;
-                            dude.position = new BABYLON.Vector3(-6, 0, 0);
-                            dude.rotationQuaternion = startRotation.clone();
-                        }
-                    }
-                });
-
-                // Enable shadows for the dude (cast shadows)
-                dude.receiveShadows = true;
-                shadowGenerator.addShadowCaster(dude);
-            });
-
-            // Create the sphere
-            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-                diameter: 0.5, // diameter of the sphere
-                segments: 32, // number of segments
-            }, scene);
-
-            sphere.position = new BABYLON.Vector3(0, 0, 6);
-            var material = new BABYLON.StandardMaterial("material", scene); 
-            material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color // Create red material
-            sphere.material = material; // Assign material to sphere
-
-            // Enable shadows for the sphere (receive shadows)
-            sphere.receiveShadows = true;
-            shadowGenerator.addShadowCaster(sphere);
-
-            // Create the fence (square fence around the village)
-            function createSquareFence(scene) {
-                const fencePostHeight = 3;
-                const fencePostRadius = 0.1;
-                const fenceSize = 20; // Smaller fence size
-
-                const positions = [
-                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
-                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, -fenceSize / 2),
-                    new BABYLON.Vector3(fenceSize / 2, fencePostHeight / 2, fenceSize / 2),
-                    new BABYLON.Vector3(-fenceSize / 2, fencePostHeight / 2, fenceSize / 2)
-                ];
-
-                // Create 4 fence posts at the corners
-                const posts = positions.map((pos, index) => {
-                    const post = BABYLON.MeshBuilder.CreateCylinder("post" + index, {
-                        height: fencePostHeight,
-                        diameter: fencePostRadius
-                    }, scene);
-                    post.position = pos;
-
-                    // Enable shadow casting for posts
-                    post.receiveShadows = true;
-                    shadowGenerator.addShadowCaster(post);
-
-                    return post;
-                });
-
-                // Create panels between posts
-                const panels = [];
-                for (let i = 0; i < positions.length; i++) {
-                    const startPos = positions[i];
-                    const endPos = positions[(i + 1) % positions.length]; // Wrap around for the last panel
-                    const direction = endPos.subtract(startPos);
-                    const distance = direction.length();
-
-                    // Create a panel between posts
-                    const panel = BABYLON.MeshBuilder.CreateBox("panel" + i, {
-                        width: distance,
-                        height: 2,
-                        depth: 0.1
-                    }, scene);
-
-                    // Position and rotate the panel to connect the posts
-                    panel.position = startPos.add(direction.scale(0.5));
-                    const angle = Math.atan2(direction.z, direction.x);
-                    panel.rotation = new BABYLON.Vector3(0, angle, 0);
-                    panels.push(panel);
+                // Switch between sun and moon visibility based on the sun's position
+                if (sunPositionAngle > Math.PI) {
+                    sun.setEnabled(false);  // Hide the sun
+                    moon.setEnabled(true);  // Show the moon
+                } else {
+                    sun.setEnabled(true);   // Show the sun
+                    moon.setEnabled(false); // Hide the moon
                 }
-
-                // Optional: Add a gate (we'll use one of the panels)
-                const gateWidth = 4;
-                const gateHeight = 3;
-                const gatePosition = new BABYLON.Vector3(0, gateHeight / 2, -fenceSize / 2); // Position gate at one corner
-
-                const gatePost1 = BABYLON.MeshBuilder.CreateCylinder("gatePost1", {
-                    height: gateHeight,
-                    diameter: 0.3
-                }, scene);
-                gatePost1.position = new BABYLON.Vector3(gatePosition.x - gateWidth / 2, gateHeight / 2, gatePosition.z);
-                
-                const gatePost2 = BABYLON.MeshBuilder.CreateCylinder("gatePost2", {
-                    height: gateHeight,
-                    diameter: 0.3
-                }, scene);
-                gatePost2.position = new BABYLON.Vector3(gatePosition.x + gateWidth / 2, gateHeight / 2, gatePosition.z);
-                
-                const gateBar = BABYLON.MeshBuilder.CreateBox("gateBar", {
-                    width: gateWidth,
-                    height: 0.1,
-                    depth: 0.3
-                }, scene);
-                gateBar.position = new BABYLON.Vector3(gatePosition.x, gateHeight - 0.1, gatePosition.z);
             }
 
-            createSquareFence(scene);
-
-            // Snow Particle System
-            const snowSystem = new BABYLON.GPUParticleSystem("snow", { capacity: 5000 }, scene);
-            snowSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene); // Use a small texture for snowflakes
-            snowSystem.emitter = new BABYLON.Vector3(0, 20, 0);  // Snow comes from a large emitter above the village
-            snowSystem.gravity = new BABYLON.Vector3(0, -0.5, 0);  // Apply gravity to snowflakes to make them fall
-            snowSystem.start();
-
-            // Function to update snow volume
-            function updateSnowVolume(amount) {
-                snowSystem.stop(); // Stop existing snow
-                snowSystem.capacity = amount;
-                snowSystem.start(); // Start with new snow volume
+            // Function to update the speed of the day-night cycle
+            function updateCycleSpeed(value) {
+                cycleSpeed = parseFloat(value);
+                document.getElementById("speedValue").textContent = value;
             }
 
-            // Snow volume slider control
-            const snowAmountSlider = document.getElementById("snowAmount");
-            const snowValueSpan = document.getElementById("snowValue");
-
-            snowAmountSlider.addEventListener("input", (e) => {
-                const amount = parseInt(e.target.value);
-                snowValueSpan.textContent = amount;
-                updateSnowVolume(amount);
+            // Event listener for the day-night speed slider
+            const speedSlider = document.getElementById("dayNightSpeed");
+            speedSlider.addEventListener("input", (e) => {
+                updateCycleSpeed(e.target.value);
             });
 
-            // Function to export as GLB
+            // Function to export the scene as a GLB file
             function exportToGLB() {
                 BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
                     glb.downloadFiles();
@@ -226,6 +108,11 @@
 
             // Attach export function to the download button
             document.getElementById("downloadButton").addEventListener("click", exportToGLB);
+
+            // Main render loop
+            scene.onBeforeRenderObservable.add(() => {
+                updateDayNightCycle();  // Update the sun and moon positions
+            });
 
             return scene;
         };
