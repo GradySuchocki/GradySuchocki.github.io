@@ -135,16 +135,22 @@
 
             // Apply a grass texture to the ground
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
-           
+            const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
             groundMaterial.diffuseTexture = grassTexture;
             
-            // Create the ground plane
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", {
-                width: 50,
-                height: 50,
-                subdivisions: 2
+            // Create a new plane that will serve as the ground, with the same size as the fence
+            const ground = BABYLON.MeshBuilder.CreatePlane("ground", {
+                width: 20,  // Same size as the fence (20 units)
+                height: 20, // Same size as the fence (20 units)
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE  // Make sure the plane is double-sided so we can see it from both sides
             }, scene);
+            
+            // Position the ground plane slightly below the village
+            ground.position.y = -0.1;  // Slightly below the other objects to avoid overlap
+            
+            // Apply the grass material to the ground plane
             ground.material = groundMaterial;
+            
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
