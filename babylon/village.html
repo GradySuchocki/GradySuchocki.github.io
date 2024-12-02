@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village with Dynamic Shadows</title>
+    <title>Babylon.js Village with Dynamic Shadows and Snow</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -11,6 +11,11 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
+    <div style="position: absolute; top: 60px; left: 20px; z-index: 10;">
+        <label for="snowAmount">Snow Amount:</label>
+        <input type="range" id="snowAmount" min="100" max="5000" step="100" value="1000" />
+        <span id="snowValue">1000</span>
+    </div>
     
     <script>
         var canvas = document.getElementById("renderCanvas");
@@ -188,6 +193,29 @@
 
             createSquareFence(scene);
 
+            // Snow Particle System
+            const snowSystem = new BABYLON.GPUParticleSystem("snow", { capacity: 5000 }, scene);
+            snowSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene); // Use a small texture for snowflakes
+            snowSystem.emitter = new BABYLON.Vector3(0, 10, 0);  // Snow comes from above
+            snowSystem.start();
+
+            // Function to update snow volume
+            function updateSnowVolume(amount) {
+                snowSystem.stop(); // Stop existing snow
+                snowSystem.capacity = amount;
+                snowSystem.start(); // Start with new snow volume
+            }
+
+            // Snow volume slider control
+            const snowAmountSlider = document.getElementById("snowAmount");
+            const snowValueSpan = document.getElementById("snowValue");
+
+            snowAmountSlider.addEventListener("input", (e) => {
+                const amount = parseInt(e.target.value);
+                snowValueSpan.textContent = amount;
+                updateSnowVolume(amount);
+            });
+
             // Function to export as GLB
             function exportToGLB() {
                 BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
@@ -213,6 +241,7 @@
     </script>
 </body>
 </html>
+
 
 
 
