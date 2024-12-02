@@ -133,18 +133,19 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
-            // Apply a grass texture to the ground
+            // Apply a grass texture to the ground (matching the fence dimensions)
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
             groundMaterial.diffuseTexture = grassTexture;
-            
-            // Create the ground plane
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", {
-                width: 50,
-                height: 50,
-                subdivisions: 2
+
+            // Create a plane with the same dimensions as the fence (20x20 units)
+            const grassPlane = BABYLON.MeshBuilder.CreatePlane("grassPlane", {
+                width: 20,  // Same size as the fence
+                height: 20, // Same size as the fence
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
             }, scene);
-            ground.material = groundMaterial;
+            grassPlane.material = groundMaterial;
+            grassPlane.position.y = 0.01;  // Slightly raised to avoid overlap with other objects
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
@@ -227,6 +228,7 @@
     </script>
 </body>
 </html>
+
 
 
 
