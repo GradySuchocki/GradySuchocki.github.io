@@ -133,7 +133,7 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
-                        // Apply a grass texture to the ground
+                      // Apply a grass texture to the ground
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
             groundMaterial.diffuseTexture = grassTexture;
@@ -153,8 +153,16 @@
             
             // Apply the grass material to the ground plane
             ground.material = groundMaterial;
-
             
+            // Ensure no default green ground exists by manually removing it
+            if (scene.meshes) {
+                scene.meshes.forEach(function (mesh) {
+                    if (mesh.name === "ground") {
+                        mesh.dispose();  // Dispose the default green ground mesh
+                    }
+                });
+            }
+
 
             // Function to control the sun-moon cycle
             let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
