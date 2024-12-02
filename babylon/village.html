@@ -16,16 +16,6 @@
         <input type="range" id="dayNightSpeed" min="0.1" max="1" step="0.01" value="0.25" style="width: 200px;" />
         <span id="speedValue" style="color: white;">0.25</span>
     </div>
-    <div style="position: absolute; top: 100px; left: 20px; z-index: 10;">
-        <label for="rainSpeed" style="color: white;">Rain Speed:</label>
-        <input type="range" id="rainSpeed" min="0.1" max="1" step="0.01" value="0.5" style="width: 200px;" />
-        <span id="rainSpeedValue" style="color: white;">0.5</span>
-    </div>
-    <div style="position: absolute; top: 140px; left: 20px; z-index: 10;">
-        <label for="rainDensity" style="color: white;">Rain Density:</label>
-        <input type="range" id="rainDensity" min="0.1" max="1" step="0.01" value="0.5" style="width: 200px;" />
-        <span id="rainDensityValue" style="color: white;">0.5</span>
-    </div>
     
     <script>
         var canvas = document.getElementById("renderCanvas");
@@ -143,7 +133,7 @@
             // Call the function to create the square fence
             createSquareFence(scene);
 
-            // Apply a grass texture to the ground
+                        // Apply a grass texture to the ground
             const grassTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/grass.jpg", scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
             groundMaterial.diffuseTexture = grassTexture;
@@ -164,43 +154,70 @@
             // Apply the grass material to the ground plane
             ground.material = groundMaterial;
 
-            // Rain particle system
-            var rainEmitter = new BABYLON.Mesh.CreateBox("rainEmitter", 1, scene);
-            rainEmitter.position = new BABYLON.Vector3(0, 50, 0); // Position above the scene
-            rainEmitter.isVisible = false; // We don't need to see the emitter itself
+            // Function to control the sun-moon cycle
+            let cycleSpeed = 0.25;  // Default speed for the day-night cycle (based on the slider value)
+            let sunPositionAngle = 0;  // Sun's position angle (0 = start position)
+            let moonPositionAngle = Math.PI; // Moon's starting position is opposite the sun
+            let maxCycleTime = 20;  // Maximum time for a full day-night cycle in seconds
+            let minCycleTime = 2;   // Minimum time for a full day-night cycle in seconds
 
-            // Rain particle system
-            var rain = new BABYLON.ParticleSystem("rain", 1000, scene);
-            rain.particleTexture = new BABYLON.Texture("https://www.babylonjs.com/assets/raindrop.png", scene);
-            rain.emitter = rainEmitter; // The particle system will emit from this mesh
-            rain.minEmitPower = 0.1;
-            rain.maxEmitPower = 1.0;
-            rain.minLifeTime = 1;
-            rain.maxLifeTime = 3;
-            rain.emitRate = 1000; // Control density
-            rain.start();
-
-            // Function to adjust rain speed and density
-            function updateRain() {
-                var rainSpeed = parseFloat(document.getElementById("rainSpeed").value);
-                var rainDensity = parseFloat(document.getElementById("rainDensity").value);
-
-                // Update the speed of the particles (fall speed)
-                rain.minEmitPower = rainSpeed * 0.5;
-                rain.maxEmitPower = rainSpeed;
-
-                // Update the rain density
-                rain.emitRate = rainDensity * 1000;
+            // Function to calculate the cycle speed based on the slider value
+            function calculateCycleSpeed() {
+                let cycleDuration = minCycleTime + (maxCycleTime - minCycleTime) * (1 - cycleSpeed);
+                return (2 * Math.PI) / (cycleDuration * 60);  // Speed in radians per frame
             }
 
-            // Event listeners for the rain controls
-            document.getElementById("rainSpeed").addEventListener("input", updateRain);
-            document.getElementById("rainDensity").addEventListener("input", updateRain);
+            // Update sun and moon position based on the speed
+            function updateDayNightCycle() {
+                let speed = calculateCycleSpeed();
+
+                // Sun movement (from east to west)
+                sunPositionAngle += speed;
+                if (sunPositionAngle > 2 * Math.PI) sunPositionAngle -= 2 * Math.PI;
+                
+                // Moon movement (opposite to the sun)
+                moonPositionAngle += speed;
+                if (moonPositionAngle > 2 * Math.PI) moonPositionAngle -= 2 * Math.PI;
+
+                // Update the sun and moon positions in the sky
+                sun.position = new BABYLON.Vector3(20 * Math.cos(sunPositionAngle), 20, 20 * Math.sin(sunPositionAngle));
+                moon.position = new BABYLON.Vector3(20 * Math.cos(moonPositionAngle), -20, 20 * Math.sin(moonPositionAngle));
+
+                // Switch between sun and moon visibility based on the sun's position
+                if (sunPositionAngle > Math.PI) {
+                    sun.setEnabled(false);  // Hide the sun
+                    moon.setEnabled(true);  // Show the moon
+                } else {
+                    sun.setEnabled(true);   // Show the sun
+                    moon.setEnabled(false); // Hide the moon
+                }
+            }
+
+            // Function to update the speed of the day-night cycle
+            function updateCycleSpeed(value) {
+                cycleSpeed = parseFloat(value);
+                document.getElementById("speedValue").textContent = value;
+            }
+
+            // Event listener for the day-night speed slider
+            const speedSlider = document.getElementById("dayNightSpeed");
+            speedSlider.addEventListener("input", (e) => {
+                updateCycleSpeed(e.target.value);
+            });
+
+            // Function to export the scene as a GLB file
+            function exportToGLB() {
+                BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
+                    glb.downloadFiles();
+                });
+            }
+
+            // Attach export function to the download button
+            document.getElementById("downloadButton").addEventListener("click", exportToGLB);
 
             // Main render loop
             scene.onBeforeRenderObservable.add(() => {
                 updateDayNightCycle();  // Update the sun and moon positions
-                updateRain();  // Update rain settings
             });
 
             return scene;
@@ -218,6 +235,12 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
